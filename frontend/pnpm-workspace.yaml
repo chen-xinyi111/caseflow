@@ -1,0 +1,5 @@
+storeDir: ../.runtime/cache/pnpm
+confirmModulesPurge: false
+verifyDepsBeforeRun: false
+allowBuilds:
+  esbuild: true

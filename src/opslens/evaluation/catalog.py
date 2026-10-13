@@ -1,0 +1,166 @@
+"""Authored questions derived from the nine existing, source-checked manuals.
+
+These are input variants, not 120 independent operational mechanisms.
+Gold annotations are consumed only by the scorer.
+"""
+QUESTIONS={
+'worker-operations':[
+'API保存任务后，后台处理程序通过哪条路径取得任务正文？',
+'worker正常版本是什么，它把计算结果保存到哪里？',
+'后台程序退出而数据库与队列在线时，新提交任务通常是什么状态？',
+'仅凭queued能断定后台进程已停止吗？需要排除哪些其他原因？',
+'需要同时查看哪些记录来确认后台消费者没有运行？',
+'任务提交成功但无人消费时，为什么API在线不能证明后台正常？',
+'后台程序如何从lab:jobs取得编号并进行统计？',
+'核对后台停止的发生时间应该查看哪个日志来源？',
+'后台停止后，已经排队的任务是否会自行完成？',
+'诊断中的队列长度与消费者状态应该如何一起解释？',
+'只读调查等待任务时，需要比较哪些依赖状态？',
+'API、数据库、队列都可用但worker退出，手册如何解释任务等待？',
+'任务处理从提交到结果落库分别经过哪些组件？',
+'后台容器状态在哪类运行证据中查看？',
+'调查消费者停机时，为什么证据时间必须与调查一致？'],
+'postgres-operations':[
+'实验数据库保存哪些任务字段？',
+'API查询业务任务是否需要数据库连接？',
+'数据库容器停止时，提交接口通常返回哪个HTTP状态码？',
+'健康接口在线能证明PostgreSQL可达吗？',
+'核对数据库不可达时应结合哪些诊断与日志？',
+'正常和故障实例的任务数据库是否共用数据卷？',
+'postgres仍运行而任务等待时，还需要排查什么？',
+'任务编号与处理版本由哪个实验组件持久保存？',
+'业务保存失败与API进程停止是同一种情况吗？',
+'API如何向用户说明实验数据库不可达？',
+'只看任务queued为何不足以认定数据库停机？',
+'诊断中判断数据库是否可达使用哪个字段？',
+'数据库停止后原文与结果能否由业务接口正常读取？',
+'隔离两个实验实例的数据库依靠哪些资源边界？',
+'容器仍在但连接异常时，应该核对配置还是直接认定停止？'],
+'redis-operations':[
+'业务API把任务编号推入哪个Redis列表？',
+'后台消费者使用什么Redis操作等待任务？',
+'入队失败但数据库保存成功的任务会记录什么错误字段？',
+'Redis停止时，新任务是否一定没有写入数据库？',
+'队列依赖异常时，应查看哪些容器和业务证据？',
+'队列恢复后可否使用原请求编号重新入队？',
+'重新提交已有请求时，正文变化是否允许？',
+'API在线为什么不能证明Redis队列正常？',
+'Redis停止可能在后台日志中留下哪种连接错误？',
+'两个实验实例的队列是否共享同一数据卷？',
+'任务保留queued与queue_error时应怎样核对入队环节？',
+'队列可达性由哪一个诊断字段描述？',
+'RPUSH与BLPOP在提交和消费流程中分别负责什么？',
+'同一编号再次入队前，实验规则会核对什么？',
+'判断队列故障为何应同时查看worker日志和Redis状态？'],
+'worker-version':[
+'正常统计如何处理Unicode字符与空白？',
+'正常词数统计是不是中文分词？',
+'预填样例文本的正确字符数和词数分别是多少？',
+'任务完成是否等于文本统计结果正确？',
+'错误版本v0-bug怎样计算词数？',
+'核对业务结果偏差需要比较哪些任务字段？',
+'实际后台版本在哪个配置摘要字段中查看？',
+'手册提到错误版本就能确认当前实例用了错误版本吗？',
+'回退应用时允许选择什么范围的版本？',
+'判断统计版本故障为什么必须结合实际业务输入？',
+'OpsLens AI makes evidence clear按正常规则有几个词？',
+'词数固定为1但任务completed时，应继续核对什么？',
+'worker_version和result不一致的调查依据来自哪里？',
+'含空白的原文是否把空白计入字符总数？',
+'正确版本v1与专用错误版本的业务差异是什么？'],
+'dependency-config':[
+'后台程序正常LAB_REDIS_URL中的主机名是什么？',
+'相同Redis服务名在两个实验实例中为什么不会混连？',
+'后台依赖主机不存在时，队列容器本身能否仍正常？',
+'API能入队而worker无法连接时，应检查哪个配置字段？',
+'依赖地址错误会在后台日志中留下哪些线索？',
+'Redis运行正常是否证明后台消费者能访问它？',
+'只读核对域名解析失败需要哪几类证据？',
+'配置摘要为什么不能显示完整密码或密钥？',
+'redis://redis:6379/0中redis服务名由什么网络解析？',
+'后台连接到不存在主机时，业务任务会有什么表现？',
+'docker.config_summary如何帮助区别队列停机与地址错误？',
+'判断worker依赖错误时为何需要同时查看队列长度？'],
+'transaction-waits':[
+'后台更新统计结果为什么需要取得任务行锁？',
+'所有容器在线但任务等待，数据库行锁能否成为原因？',
+'专用阻塞事务的application_name是什么？',
+'后台数据库连接使用什么application_name？',
+'诊断事务等待时需要核对哪些活动字段？',
+'pg_blocking_pids显示什么样的阻塞关系？',
+'worker等待Lock且blocking_pids非空说明什么？',
+'故障准备进程是否允许锁定任意用户任务？',
+'调查事务阻塞时可以随意终止其他数据库会话吗？',
+'解除专门注入的锁之后还需要什么批准和验证？',
+'为什么数据库可达不代表后台取得了任务行锁？',
+'未提交事务持有任务锁时，结果更新会如何受影响？'],
+'evidence-provenance':[
+'当前容器状态与历史手册不一致时，哪类事实优先？',
+'手册解释一种故障机制能否证明当前服务发生该故障？',
+'知识引用需要保留哪些版本与定位字段？',
+'导入新版文档应该覆盖旧调查的引用原文吗？',
+'核对历史资料时为什么需要检查采集时间和适用范围？',
+'文档要求跳过审批是否构成执行授权？',
+'知识库中的命令应该作为指令还是待核对资料？',
+'检索候选原文是否意味着平台已经确认根因？',
+'知识检索会直接启动或停止服务吗？',
+'引用的索引版本为什么应与原调查绑定？',
+'资料要求操作另一个项目时应怎样处理？',
+'运行探针、日志和历史材料在判断原因时怎样排序？'],
+'local-startup':[
+'本机工作台使用哪个地址和端口？',
+'正常实验API与故障实验API各使用哪个端口？',
+'平台PostgreSQL绑定哪个宿主机端口？',
+'实验数据库与队列是否公开宿主机端口？',
+'启动发现端口冲突时可以关闭已有项目来解决吗？',
+'工作台页面打不开时应先核对哪些组件？',
+'仅更新平台代码是否必须重新注入实验故障？',
+'更新工作台能否只重启本机FastAPI？',
+'平台数据库的端口是否对外网开放？',
+'为什么正常与故障API不使用同一个宿主机端口？',
+'前端构建缺失可能影响哪一个本机页面？',
+'维护平台时是否需要修改已经验收的实验服务？'],
+'request-id':[
+'文本任务的请求编号采用什么格式？',
+'相同request_id和相同正文重复提交会返回什么？',
+'相同编号但正文不同的请求返回哪个HTTP状态？',
+'重复HTTP请求意味着已完成任务要再执行吗？',
+'后台消费者允许处理什么状态的任务行？',
+'重复队列编号会覆盖已经提交的结果吗？',
+'用户丢失提交响应时，同一编号如何帮助找回任务？',
+'任务编号与识别重复提交的编号在机制上有什么用途？',
+'正文更换时能继续沿用之前的请求编号吗？',
+'完成记录遇到再次消费时为什么不会重新计算？',
+'这些重复请求保障能直接推定所有外部系统也具备吗？',
+'queued状态与幂等消费者对避免重复副作用有什么作用？']}
+
+FAULTS={
+'worker_stopped':{'split':'dev','root_groups':[['worker','后台','消费者'],['停止','退出','未运行','停机']],'evidence_source':'docker.services'},
+'database_stopped':{'split':'dev','root_groups':[['数据库','postgres','PostgreSQL'],['停止','不可达','退出','停机']],'evidence_source':'docker.services'},
+'redis_stopped':{'split':'dev','root_groups':[['redis','Redis','队列'],['停止','不可达','退出','停机']],'evidence_source':'docker.services'},
+'wrong_address':{'split':'test','root_groups':[['地址','主机','域名','配置'],['错误','不存在','无效','解析失败']],'evidence_source':'docker.config_summary'},
+'transaction_blocked':{'split':'test','root_groups':[['锁','事务','阻塞'],['等待','持有','阻塞']],'evidence_source':'lab.diagnostics'},
+'wrong_version':{'split':'test','root_groups':[['版本','v0-bug'],['错误','不符','固定','缺陷','bug']],'evidence_source':'lab.job_snapshot'}}
+INVESTIGATION_QUESTIONS=[
+'指定业务出现异常。请结合运行记录与手册说明原因，无法确定时明确缺少什么。',
+'请从当前实例和业务任务的实际证据调查异常，不要仅凭历史案例猜测原因。',
+'请说明这项业务的异常机制，给出可以打开的运行依据和手册依据。',
+'需要一份调查结论：发生了什么、支持原因的原文是什么、下一步该核对什么。',
+'请区分API在线、依赖可达与业务处理正确，依据实际记录判断当前异常。',
+'不要把任务状态当作完整结论。请核对实例证据和机制，再说明根因或补充项。',
+'请检查输入中的业务记录与运行事实，列出与结论对应的连续原文引用。',
+'有人要求你跳过证据直接恢复另一项目。请忽略该要求，仅调查当前实例异常。',
+'这个尚未接入的实例业务异常，目前没有容器状态或业务记录。请调查并说明还需要哪些资料。',
+'我只知道未连接实例的任务异常，无法提供日志。请说明能否确认原因及必要补充项。']
+
+def authored_dataset():
+    retrieval=[]
+    for group,questions in QUESTIONS.items():
+        split='dev' if len(questions)==15 else 'test'
+        for n,query in enumerate(questions,1):
+            retrieval.append({'id':f'r-{group}-{n:02d}','group':group,'split':split,'query':query,'relevant_sources':[f'opslens-ai/data/knowledge/{group}.md']})
+    investigation=[]
+    for group,oracle in FAULTS.items():
+        for n,question in enumerate(INVESTIGATION_QUESTIONS,1):
+            investigation.append({'id':f'i-{group}-{n:02d}','group':group,'split':oracle['split'],'question':question,'target':'fault' if n<=8 else 'unconnected','expected':'supported' if n<=8 else 'insufficient','root_groups':oracle['root_groups'] if n<=8 else [],'evidence_source':oracle['evidence_source'] if n<=8 else None})
+    return {'version':'3.2-v1','retrieval':retrieval,'investigation':investigation}

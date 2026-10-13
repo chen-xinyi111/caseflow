@@ -1,0 +1,26 @@
+[
+  {
+    "query": "worker 停止后任务为什么一直等待处理？",
+    "source": "worker-operations"
+  },
+  {
+    "query": "数据库停止后提交任务返回 503，怎么核对 PostgreSQL 是否不可达？",
+    "source": "postgres-operations"
+  },
+  {
+    "query": "Redis 停止时 queue_error=redis_unavailable 是什么意思？",
+    "source": "redis-operations"
+  },
+  {
+    "query": "worker 的 Redis 主机地址错误，日志出现 dependency failure，应该核对哪些配置？",
+    "source": "dependency-config"
+  },
+  {
+    "query": "pg_blocking_pids 显示 worker 等待 Lock，该如何核对事务阻塞？",
+    "source": "transaction-waits"
+  },
+  {
+    "query": "任务 completed 但词数是 1，worker_version 为 v0-bug，正确统计结果是什么？",
+    "source": "worker-version"
+  }
+]

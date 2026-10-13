@@ -1,0 +1,45 @@
+{
+  "version": "3.2-v1",
+  "dataset_sha256": "ebb60dd9ffb36b92fd863d3ec914dd215637ea27139ba2baf9fe42d82b75dbf2",
+  "source_commit": "bf11a99dea23779034066071c51dfc4d217afd6f",
+  "files": {
+    "data/knowledge/dependency-config.md": "b3b8b19286ea08a319d1f5d2e2d6e7a21a26078a28b190c5931f190bf2512c74",
+    "data/knowledge/evidence-provenance.md": "9f017a6a807577977433c409c73a26546c5f334e44e4cfe836d8d412f10070f6",
+    "data/knowledge/local-startup.md": "d579f2ecf1dec8dc426a02f1b4a399255f65d9d813e5ab79dad6f0893f4c5e1d",
+    "data/knowledge/postgres-operations.md": "36d6c093dda785521d27165662bc1e0ba352629fbb7b86781053a1ac8e0126e6",
+    "data/knowledge/redis-operations.md": "c4ac0f2c51326bf5180cd83115a096eedff2fecf4f7a0214b35e094e2acf7288",
+    "data/knowledge/request-id.md": "a8dbec05ad58c5106c22a04ffe1eba56a7615b812d63c3a3d2a4f68900edb457",
+    "data/knowledge/transaction-waits.md": "b8a52f11509679461637fc63baead9a1eb9148a350478890fcf11588a598d38c",
+    "data/knowledge/worker-operations.md": "63765c7464216e78d44146750bbc949d7d71a011469e052e69760b641851097b",
+    "data/knowledge/worker-version.md": "6fe346d652a8615a5dd850ac9aadebe2dc06deee035a6d388a546519b725a1ed",
+    "src/lab/app.py": "9585f2bba673f2793ce6e18bf85cd609213456353e95e6a109f1f8de9f1f6228",
+    "src/lab/worker.py": "b660c5f555f3f0c0df3ef53f87f86fd8d9fc39e9a061feed4820a79f26a09178",
+    "src/lab/common.py": "dd6d5cabf4a861261c13bebe7a81bfef6beae92637187013102f92bbfdd08d64",
+    "src/opslens/investigation/engine.py": "d7acfd28d375830dab357f7b7192fac897925e6286672bc46aa1fd42f2874d32",
+    "src/opslens/investigation/collaboration.py": "a232d3acd13faed5aafcdd33c0f4c92eb0cc9156c08eb6a192d2816641e03b06",
+    "src/opslens/investigation/verification.py": "93eacc43cbf2556a800e4c87dc35e755bed9eeda6e7315b7e45be8969cade8dc",
+    "src/opslens/rag/ranking.py": "20c11299b5f0daf7bdb1e8abf4f53ae1ff401ecd0a957a3ab1db7eff7f3fabba"
+  },
+  "retrieval_group_counts": {
+    "dev": 4,
+    "test": 5
+  },
+  "investigation_group_counts": {
+    "dev": 3,
+    "test": 3
+  },
+  "parameters": {
+    "return_k": 6,
+    "recall_k": 20,
+    "model_calls": 8,
+    "tool_calls": 12,
+    "subtasks": 6,
+    "timeout_seconds": 240
+  },
+  "limits": [
+    "手册与故障机制均已用于历史开发；本次只冻结新的输入变体",
+    "调查每个故障组复用同一真实快照，组内样本相关，不能视为独立故障",
+    "相关性为单个手册来源标注，不是逐段语义金标",
+    "根因规则与引文存在性不等于人工语义审核"
+  ]
+}

@@ -1,0 +1,119 @@
+[
+  {
+    "slug": "worker-operations",
+    "title": "worker 与等待处理任务",
+    "source": "opslens-ai/data/knowledge/worker-operations.md",
+    "derived_from": [
+      "src/lab/app.py",
+      "src/lab/worker.py",
+      "src/lab/common.py",
+      "src/lab/blocker.py",
+      "scripts/lab_control.py"
+    ],
+    "source_code_ref": "delivery-1.1"
+  },
+  {
+    "slug": "postgres-operations",
+    "title": "PostgreSQL 连接与数据库停止",
+    "source": "opslens-ai/data/knowledge/postgres-operations.md",
+    "derived_from": [
+      "src/lab/app.py",
+      "src/lab/worker.py",
+      "src/lab/common.py",
+      "src/lab/blocker.py",
+      "scripts/lab_control.py"
+    ],
+    "source_code_ref": "delivery-1.1"
+  },
+  {
+    "slug": "redis-operations",
+    "title": "Redis 队列与入队错误",
+    "source": "opslens-ai/data/knowledge/redis-operations.md",
+    "derived_from": [
+      "src/lab/app.py",
+      "src/lab/worker.py",
+      "src/lab/common.py",
+      "src/lab/blocker.py",
+      "scripts/lab_control.py"
+    ],
+    "source_code_ref": "delivery-1.1"
+  },
+  {
+    "slug": "dependency-config",
+    "title": "Redis 地址错误与依赖配置",
+    "source": "opslens-ai/data/knowledge/dependency-config.md",
+    "derived_from": [
+      "src/lab/app.py",
+      "src/lab/worker.py",
+      "src/lab/common.py",
+      "src/lab/blocker.py",
+      "scripts/lab_control.py"
+    ],
+    "source_code_ref": "delivery-1.1"
+  },
+  {
+    "slug": "transaction-waits",
+    "title": "事务阻塞与任务行锁",
+    "source": "opslens-ai/data/knowledge/transaction-waits.md",
+    "derived_from": [
+      "src/lab/app.py",
+      "src/lab/worker.py",
+      "src/lab/common.py",
+      "src/lab/blocker.py",
+      "scripts/lab_control.py"
+    ],
+    "source_code_ref": "delivery-1.1"
+  },
+  {
+    "slug": "worker-version",
+    "title": "统计规则与应用版本核对",
+    "source": "opslens-ai/data/knowledge/worker-version.md",
+    "derived_from": [
+      "src/lab/app.py",
+      "src/lab/worker.py",
+      "src/lab/common.py",
+      "src/lab/blocker.py",
+      "scripts/lab_control.py"
+    ],
+    "source_code_ref": "delivery-1.1"
+  },
+  {
+    "slug": "evidence-provenance",
+    "title": "运行证据与历史资料的使用边界",
+    "source": "opslens-ai/data/knowledge/evidence-provenance.md",
+    "derived_from": [
+      "src/lab/app.py",
+      "src/lab/worker.py",
+      "src/lab/common.py",
+      "src/lab/blocker.py",
+      "scripts/lab_control.py"
+    ],
+    "source_code_ref": "delivery-1.1"
+  },
+  {
+    "slug": "local-startup",
+    "title": "本机工作台与端口检查",
+    "source": "opslens-ai/data/knowledge/local-startup.md",
+    "derived_from": [
+      "src/lab/app.py",
+      "src/lab/worker.py",
+      "src/lab/common.py",
+      "src/lab/blocker.py",
+      "scripts/lab_control.py"
+    ],
+    "source_code_ref": "delivery-1.1"
+  },
+  {
+    "slug": "request-id",
+    "title": "重复请求与任务编号",
+    "source": "opslens-ai/data/knowledge/request-id.md",
+    "derived_from": [
+      "src/lab/app.py",
+      "src/lab/worker.py",
+      "src/lab/common.py",
+      "src/lab/blocker.py",
+      "scripts/lab_control.py"
+    ],
+    "source_code_ref": "delivery-1.1"
+  }
+]

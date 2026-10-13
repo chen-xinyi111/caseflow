@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
+    environment:
+      POSTGRES_USER: opslens
+      POSTGRES_PASSWORD: ${PLATFORM_DB_PASSWORD:?Run Setup.ps1}
+      POSTGRES_DB: opslens
+    ports: ["127.0.0.1:18183:5432"]
+    volumes: [platform-data:/var/lib/postgresql/data]
+    labels: {io.opslens.scope: platform}
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U opslens -d opslens"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  platform-data:

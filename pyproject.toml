@@ -1,0 +1,10 @@
+[project]
+name = "opslens-ai"
+version = "0.4.0"
+description = "Local evidence-driven operations investigation platform"
+requires-python = ">=3.12,<3.15"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = ["integration: requires the isolated local Docker environments"]

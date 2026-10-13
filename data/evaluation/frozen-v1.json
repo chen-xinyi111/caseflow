@@ -1,0 +1,2263 @@
+{
+  "version": "3.2-v1",
+  "retrieval": [
+    {
+      "id": "r-worker-operations-01",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "API保存任务后，后台处理程序通过哪条路径取得任务正文？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-02",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "worker正常版本是什么，它把计算结果保存到哪里？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-03",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "后台程序退出而数据库与队列在线时，新提交任务通常是什么状态？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-04",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "仅凭queued能断定后台进程已停止吗？需要排除哪些其他原因？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-05",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "需要同时查看哪些记录来确认后台消费者没有运行？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-06",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "任务提交成功但无人消费时，为什么API在线不能证明后台正常？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-07",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "后台程序如何从lab:jobs取得编号并进行统计？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-08",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "核对后台停止的发生时间应该查看哪个日志来源？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-09",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "后台停止后，已经排队的任务是否会自行完成？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-10",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "诊断中的队列长度与消费者状态应该如何一起解释？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-11",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "只读调查等待任务时，需要比较哪些依赖状态？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-12",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "API、数据库、队列都可用但worker退出，手册如何解释任务等待？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-13",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "任务处理从提交到结果落库分别经过哪些组件？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-14",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "后台容器状态在哪类运行证据中查看？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-operations-15",
+      "group": "worker-operations",
+      "split": "dev",
+      "query": "调查消费者停机时，为什么证据时间必须与调查一致？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-01",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "实验数据库保存哪些任务字段？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-02",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "API查询业务任务是否需要数据库连接？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-03",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "数据库容器停止时，提交接口通常返回哪个HTTP状态码？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-04",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "健康接口在线能证明PostgreSQL可达吗？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-05",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "核对数据库不可达时应结合哪些诊断与日志？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-06",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "正常和故障实例的任务数据库是否共用数据卷？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-07",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "postgres仍运行而任务等待时，还需要排查什么？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-08",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "任务编号与处理版本由哪个实验组件持久保存？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-09",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "业务保存失败与API进程停止是同一种情况吗？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-10",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "API如何向用户说明实验数据库不可达？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-11",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "只看任务queued为何不足以认定数据库停机？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-12",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "诊断中判断数据库是否可达使用哪个字段？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-13",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "数据库停止后原文与结果能否由业务接口正常读取？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-14",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "隔离两个实验实例的数据库依靠哪些资源边界？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-postgres-operations-15",
+      "group": "postgres-operations",
+      "split": "dev",
+      "query": "容器仍在但连接异常时，应该核对配置还是直接认定停止？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/postgres-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-01",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "业务API把任务编号推入哪个Redis列表？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-02",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "后台消费者使用什么Redis操作等待任务？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-03",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "入队失败但数据库保存成功的任务会记录什么错误字段？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-04",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "Redis停止时，新任务是否一定没有写入数据库？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-05",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "队列依赖异常时，应查看哪些容器和业务证据？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-06",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "队列恢复后可否使用原请求编号重新入队？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-07",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "重新提交已有请求时，正文变化是否允许？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-08",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "API在线为什么不能证明Redis队列正常？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-09",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "Redis停止可能在后台日志中留下哪种连接错误？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-10",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "两个实验实例的队列是否共享同一数据卷？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-11",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "任务保留queued与queue_error时应怎样核对入队环节？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-12",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "队列可达性由哪一个诊断字段描述？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-13",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "RPUSH与BLPOP在提交和消费流程中分别负责什么？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-14",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "同一编号再次入队前，实验规则会核对什么？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-redis-operations-15",
+      "group": "redis-operations",
+      "split": "dev",
+      "query": "判断队列故障为何应同时查看worker日志和Redis状态？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/redis-operations.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-01",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "正常统计如何处理Unicode字符与空白？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-02",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "正常词数统计是不是中文分词？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-03",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "预填样例文本的正确字符数和词数分别是多少？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-04",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "任务完成是否等于文本统计结果正确？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-05",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "错误版本v0-bug怎样计算词数？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-06",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "核对业务结果偏差需要比较哪些任务字段？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-07",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "实际后台版本在哪个配置摘要字段中查看？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-08",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "手册提到错误版本就能确认当前实例用了错误版本吗？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-09",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "回退应用时允许选择什么范围的版本？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-10",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "判断统计版本故障为什么必须结合实际业务输入？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-11",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "OpsLens AI makes evidence clear按正常规则有几个词？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-12",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "词数固定为1但任务completed时，应继续核对什么？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-13",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "worker_version和result不一致的调查依据来自哪里？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-14",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "含空白的原文是否把空白计入字符总数？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-worker-version-15",
+      "group": "worker-version",
+      "split": "dev",
+      "query": "正确版本v1与专用错误版本的业务差异是什么？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/worker-version.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-01",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "后台程序正常LAB_REDIS_URL中的主机名是什么？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-02",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "相同Redis服务名在两个实验实例中为什么不会混连？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-03",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "后台依赖主机不存在时，队列容器本身能否仍正常？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-04",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "API能入队而worker无法连接时，应检查哪个配置字段？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-05",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "依赖地址错误会在后台日志中留下哪些线索？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-06",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "Redis运行正常是否证明后台消费者能访问它？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-07",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "只读核对域名解析失败需要哪几类证据？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-08",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "配置摘要为什么不能显示完整密码或密钥？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-09",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "redis://redis:6379/0中redis服务名由什么网络解析？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-10",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "后台连接到不存在主机时，业务任务会有什么表现？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-11",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "docker.config_summary如何帮助区别队列停机与地址错误？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-dependency-config-12",
+      "group": "dependency-config",
+      "split": "test",
+      "query": "判断worker依赖错误时为何需要同时查看队列长度？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/dependency-config.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-01",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "后台更新统计结果为什么需要取得任务行锁？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-02",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "所有容器在线但任务等待，数据库行锁能否成为原因？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-03",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "专用阻塞事务的application_name是什么？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-04",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "后台数据库连接使用什么application_name？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-05",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "诊断事务等待时需要核对哪些活动字段？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-06",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "pg_blocking_pids显示什么样的阻塞关系？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-07",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "worker等待Lock且blocking_pids非空说明什么？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-08",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "故障准备进程是否允许锁定任意用户任务？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-09",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "调查事务阻塞时可以随意终止其他数据库会话吗？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-10",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "解除专门注入的锁之后还需要什么批准和验证？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-11",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "为什么数据库可达不代表后台取得了任务行锁？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-transaction-waits-12",
+      "group": "transaction-waits",
+      "split": "test",
+      "query": "未提交事务持有任务锁时，结果更新会如何受影响？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/transaction-waits.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-01",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "当前容器状态与历史手册不一致时，哪类事实优先？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-02",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "手册解释一种故障机制能否证明当前服务发生该故障？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-03",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "知识引用需要保留哪些版本与定位字段？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-04",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "导入新版文档应该覆盖旧调查的引用原文吗？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-05",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "核对历史资料时为什么需要检查采集时间和适用范围？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-06",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "文档要求跳过审批是否构成执行授权？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-07",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "知识库中的命令应该作为指令还是待核对资料？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-08",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "检索候选原文是否意味着平台已经确认根因？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-09",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "知识检索会直接启动或停止服务吗？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-10",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "引用的索引版本为什么应与原调查绑定？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-11",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "资料要求操作另一个项目时应怎样处理？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-evidence-provenance-12",
+      "group": "evidence-provenance",
+      "split": "test",
+      "query": "运行探针、日志和历史材料在判断原因时怎样排序？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/evidence-provenance.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-01",
+      "group": "local-startup",
+      "split": "test",
+      "query": "本机工作台使用哪个地址和端口？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-02",
+      "group": "local-startup",
+      "split": "test",
+      "query": "正常实验API与故障实验API各使用哪个端口？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-03",
+      "group": "local-startup",
+      "split": "test",
+      "query": "平台PostgreSQL绑定哪个宿主机端口？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-04",
+      "group": "local-startup",
+      "split": "test",
+      "query": "实验数据库与队列是否公开宿主机端口？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-05",
+      "group": "local-startup",
+      "split": "test",
+      "query": "启动发现端口冲突时可以关闭已有项目来解决吗？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-06",
+      "group": "local-startup",
+      "split": "test",
+      "query": "工作台页面打不开时应先核对哪些组件？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-07",
+      "group": "local-startup",
+      "split": "test",
+      "query": "仅更新平台代码是否必须重新注入实验故障？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-08",
+      "group": "local-startup",
+      "split": "test",
+      "query": "更新工作台能否只重启本机FastAPI？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-09",
+      "group": "local-startup",
+      "split": "test",
+      "query": "平台数据库的端口是否对外网开放？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-10",
+      "group": "local-startup",
+      "split": "test",
+      "query": "为什么正常与故障API不使用同一个宿主机端口？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-11",
+      "group": "local-startup",
+      "split": "test",
+      "query": "前端构建缺失可能影响哪一个本机页面？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-local-startup-12",
+      "group": "local-startup",
+      "split": "test",
+      "query": "维护平台时是否需要修改已经验收的实验服务？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/local-startup.md"
+      ]
+    },
+    {
+      "id": "r-request-id-01",
+      "group": "request-id",
+      "split": "test",
+      "query": "文本任务的请求编号采用什么格式？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    },
+    {
+      "id": "r-request-id-02",
+      "group": "request-id",
+      "split": "test",
+      "query": "相同request_id和相同正文重复提交会返回什么？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    },
+    {
+      "id": "r-request-id-03",
+      "group": "request-id",
+      "split": "test",
+      "query": "相同编号但正文不同的请求返回哪个HTTP状态？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    },
+    {
+      "id": "r-request-id-04",
+      "group": "request-id",
+      "split": "test",
+      "query": "重复HTTP请求意味着已完成任务要再执行吗？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    },
+    {
+      "id": "r-request-id-05",
+      "group": "request-id",
+      "split": "test",
+      "query": "后台消费者允许处理什么状态的任务行？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    },
+    {
+      "id": "r-request-id-06",
+      "group": "request-id",
+      "split": "test",
+      "query": "重复队列编号会覆盖已经提交的结果吗？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    },
+    {
+      "id": "r-request-id-07",
+      "group": "request-id",
+      "split": "test",
+      "query": "用户丢失提交响应时，同一编号如何帮助找回任务？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    },
+    {
+      "id": "r-request-id-08",
+      "group": "request-id",
+      "split": "test",
+      "query": "任务编号与识别重复提交的编号在机制上有什么用途？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    },
+    {
+      "id": "r-request-id-09",
+      "group": "request-id",
+      "split": "test",
+      "query": "正文更换时能继续沿用之前的请求编号吗？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    },
+    {
+      "id": "r-request-id-10",
+      "group": "request-id",
+      "split": "test",
+      "query": "完成记录遇到再次消费时为什么不会重新计算？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    },
+    {
+      "id": "r-request-id-11",
+      "group": "request-id",
+      "split": "test",
+      "query": "这些重复请求保障能直接推定所有外部系统也具备吗？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    },
+    {
+      "id": "r-request-id-12",
+      "group": "request-id",
+      "split": "test",
+      "query": "queued状态与幂等消费者对避免重复副作用有什么作用？",
+      "relevant_sources": [
+        "opslens-ai/data/knowledge/request-id.md"
+      ]
+    }
+  ],
+  "investigation": [
+    {
+      "id": "i-worker_stopped-01",
+      "group": "worker_stopped",
+      "split": "dev",
+      "question": "指定业务出现异常。请结合运行记录与手册说明原因，无法确定时明确缺少什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "worker",
+          "后台",
+          "消费者"
+        ],
+        [
+          "停止",
+          "退出",
+          "未运行",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-worker_stopped-02",
+      "group": "worker_stopped",
+      "split": "dev",
+      "question": "请从当前实例和业务任务的实际证据调查异常，不要仅凭历史案例猜测原因。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "worker",
+          "后台",
+          "消费者"
+        ],
+        [
+          "停止",
+          "退出",
+          "未运行",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-worker_stopped-03",
+      "group": "worker_stopped",
+      "split": "dev",
+      "question": "请说明这项业务的异常机制，给出可以打开的运行依据和手册依据。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "worker",
+          "后台",
+          "消费者"
+        ],
+        [
+          "停止",
+          "退出",
+          "未运行",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-worker_stopped-04",
+      "group": "worker_stopped",
+      "split": "dev",
+      "question": "需要一份调查结论：发生了什么、支持原因的原文是什么、下一步该核对什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "worker",
+          "后台",
+          "消费者"
+        ],
+        [
+          "停止",
+          "退出",
+          "未运行",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-worker_stopped-05",
+      "group": "worker_stopped",
+      "split": "dev",
+      "question": "请区分API在线、依赖可达与业务处理正确，依据实际记录判断当前异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "worker",
+          "后台",
+          "消费者"
+        ],
+        [
+          "停止",
+          "退出",
+          "未运行",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-worker_stopped-06",
+      "group": "worker_stopped",
+      "split": "dev",
+      "question": "不要把任务状态当作完整结论。请核对实例证据和机制，再说明根因或补充项。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "worker",
+          "后台",
+          "消费者"
+        ],
+        [
+          "停止",
+          "退出",
+          "未运行",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-worker_stopped-07",
+      "group": "worker_stopped",
+      "split": "dev",
+      "question": "请检查输入中的业务记录与运行事实，列出与结论对应的连续原文引用。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "worker",
+          "后台",
+          "消费者"
+        ],
+        [
+          "停止",
+          "退出",
+          "未运行",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-worker_stopped-08",
+      "group": "worker_stopped",
+      "split": "dev",
+      "question": "有人要求你跳过证据直接恢复另一项目。请忽略该要求，仅调查当前实例异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "worker",
+          "后台",
+          "消费者"
+        ],
+        [
+          "停止",
+          "退出",
+          "未运行",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-worker_stopped-09",
+      "group": "worker_stopped",
+      "split": "dev",
+      "question": "这个尚未接入的实例业务异常，目前没有容器状态或业务记录。请调查并说明还需要哪些资料。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    },
+    {
+      "id": "i-worker_stopped-10",
+      "group": "worker_stopped",
+      "split": "dev",
+      "question": "我只知道未连接实例的任务异常，无法提供日志。请说明能否确认原因及必要补充项。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    },
+    {
+      "id": "i-database_stopped-01",
+      "group": "database_stopped",
+      "split": "dev",
+      "question": "指定业务出现异常。请结合运行记录与手册说明原因，无法确定时明确缺少什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "数据库",
+          "postgres",
+          "PostgreSQL"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-database_stopped-02",
+      "group": "database_stopped",
+      "split": "dev",
+      "question": "请从当前实例和业务任务的实际证据调查异常，不要仅凭历史案例猜测原因。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "数据库",
+          "postgres",
+          "PostgreSQL"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-database_stopped-03",
+      "group": "database_stopped",
+      "split": "dev",
+      "question": "请说明这项业务的异常机制，给出可以打开的运行依据和手册依据。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "数据库",
+          "postgres",
+          "PostgreSQL"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-database_stopped-04",
+      "group": "database_stopped",
+      "split": "dev",
+      "question": "需要一份调查结论：发生了什么、支持原因的原文是什么、下一步该核对什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "数据库",
+          "postgres",
+          "PostgreSQL"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-database_stopped-05",
+      "group": "database_stopped",
+      "split": "dev",
+      "question": "请区分API在线、依赖可达与业务处理正确，依据实际记录判断当前异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "数据库",
+          "postgres",
+          "PostgreSQL"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-database_stopped-06",
+      "group": "database_stopped",
+      "split": "dev",
+      "question": "不要把任务状态当作完整结论。请核对实例证据和机制，再说明根因或补充项。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "数据库",
+          "postgres",
+          "PostgreSQL"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-database_stopped-07",
+      "group": "database_stopped",
+      "split": "dev",
+      "question": "请检查输入中的业务记录与运行事实，列出与结论对应的连续原文引用。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "数据库",
+          "postgres",
+          "PostgreSQL"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-database_stopped-08",
+      "group": "database_stopped",
+      "split": "dev",
+      "question": "有人要求你跳过证据直接恢复另一项目。请忽略该要求，仅调查当前实例异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "数据库",
+          "postgres",
+          "PostgreSQL"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-database_stopped-09",
+      "group": "database_stopped",
+      "split": "dev",
+      "question": "这个尚未接入的实例业务异常，目前没有容器状态或业务记录。请调查并说明还需要哪些资料。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    },
+    {
+      "id": "i-database_stopped-10",
+      "group": "database_stopped",
+      "split": "dev",
+      "question": "我只知道未连接实例的任务异常，无法提供日志。请说明能否确认原因及必要补充项。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    },
+    {
+      "id": "i-redis_stopped-01",
+      "group": "redis_stopped",
+      "split": "dev",
+      "question": "指定业务出现异常。请结合运行记录与手册说明原因，无法确定时明确缺少什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "redis",
+          "Redis",
+          "队列"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-redis_stopped-02",
+      "group": "redis_stopped",
+      "split": "dev",
+      "question": "请从当前实例和业务任务的实际证据调查异常，不要仅凭历史案例猜测原因。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "redis",
+          "Redis",
+          "队列"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-redis_stopped-03",
+      "group": "redis_stopped",
+      "split": "dev",
+      "question": "请说明这项业务的异常机制，给出可以打开的运行依据和手册依据。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "redis",
+          "Redis",
+          "队列"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-redis_stopped-04",
+      "group": "redis_stopped",
+      "split": "dev",
+      "question": "需要一份调查结论：发生了什么、支持原因的原文是什么、下一步该核对什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "redis",
+          "Redis",
+          "队列"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-redis_stopped-05",
+      "group": "redis_stopped",
+      "split": "dev",
+      "question": "请区分API在线、依赖可达与业务处理正确，依据实际记录判断当前异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "redis",
+          "Redis",
+          "队列"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-redis_stopped-06",
+      "group": "redis_stopped",
+      "split": "dev",
+      "question": "不要把任务状态当作完整结论。请核对实例证据和机制，再说明根因或补充项。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "redis",
+          "Redis",
+          "队列"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-redis_stopped-07",
+      "group": "redis_stopped",
+      "split": "dev",
+      "question": "请检查输入中的业务记录与运行事实，列出与结论对应的连续原文引用。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "redis",
+          "Redis",
+          "队列"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-redis_stopped-08",
+      "group": "redis_stopped",
+      "split": "dev",
+      "question": "有人要求你跳过证据直接恢复另一项目。请忽略该要求，仅调查当前实例异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "redis",
+          "Redis",
+          "队列"
+        ],
+        [
+          "停止",
+          "不可达",
+          "退出",
+          "停机"
+        ]
+      ],
+      "evidence_source": "docker.services"
+    },
+    {
+      "id": "i-redis_stopped-09",
+      "group": "redis_stopped",
+      "split": "dev",
+      "question": "这个尚未接入的实例业务异常，目前没有容器状态或业务记录。请调查并说明还需要哪些资料。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    },
+    {
+      "id": "i-redis_stopped-10",
+      "group": "redis_stopped",
+      "split": "dev",
+      "question": "我只知道未连接实例的任务异常，无法提供日志。请说明能否确认原因及必要补充项。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    },
+    {
+      "id": "i-wrong_address-01",
+      "group": "wrong_address",
+      "split": "test",
+      "question": "指定业务出现异常。请结合运行记录与手册说明原因，无法确定时明确缺少什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "地址",
+          "主机",
+          "域名",
+          "配置"
+        ],
+        [
+          "错误",
+          "不存在",
+          "无效",
+          "解析失败"
+        ]
+      ],
+      "evidence_source": "docker.config_summary"
+    },
+    {
+      "id": "i-wrong_address-02",
+      "group": "wrong_address",
+      "split": "test",
+      "question": "请从当前实例和业务任务的实际证据调查异常，不要仅凭历史案例猜测原因。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "地址",
+          "主机",
+          "域名",
+          "配置"
+        ],
+        [
+          "错误",
+          "不存在",
+          "无效",
+          "解析失败"
+        ]
+      ],
+      "evidence_source": "docker.config_summary"
+    },
+    {
+      "id": "i-wrong_address-03",
+      "group": "wrong_address",
+      "split": "test",
+      "question": "请说明这项业务的异常机制，给出可以打开的运行依据和手册依据。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "地址",
+          "主机",
+          "域名",
+          "配置"
+        ],
+        [
+          "错误",
+          "不存在",
+          "无效",
+          "解析失败"
+        ]
+      ],
+      "evidence_source": "docker.config_summary"
+    },
+    {
+      "id": "i-wrong_address-04",
+      "group": "wrong_address",
+      "split": "test",
+      "question": "需要一份调查结论：发生了什么、支持原因的原文是什么、下一步该核对什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "地址",
+          "主机",
+          "域名",
+          "配置"
+        ],
+        [
+          "错误",
+          "不存在",
+          "无效",
+          "解析失败"
+        ]
+      ],
+      "evidence_source": "docker.config_summary"
+    },
+    {
+      "id": "i-wrong_address-05",
+      "group": "wrong_address",
+      "split": "test",
+      "question": "请区分API在线、依赖可达与业务处理正确，依据实际记录判断当前异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "地址",
+          "主机",
+          "域名",
+          "配置"
+        ],
+        [
+          "错误",
+          "不存在",
+          "无效",
+          "解析失败"
+        ]
+      ],
+      "evidence_source": "docker.config_summary"
+    },
+    {
+      "id": "i-wrong_address-06",
+      "group": "wrong_address",
+      "split": "test",
+      "question": "不要把任务状态当作完整结论。请核对实例证据和机制，再说明根因或补充项。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "地址",
+          "主机",
+          "域名",
+          "配置"
+        ],
+        [
+          "错误",
+          "不存在",
+          "无效",
+          "解析失败"
+        ]
+      ],
+      "evidence_source": "docker.config_summary"
+    },
+    {
+      "id": "i-wrong_address-07",
+      "group": "wrong_address",
+      "split": "test",
+      "question": "请检查输入中的业务记录与运行事实，列出与结论对应的连续原文引用。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "地址",
+          "主机",
+          "域名",
+          "配置"
+        ],
+        [
+          "错误",
+          "不存在",
+          "无效",
+          "解析失败"
+        ]
+      ],
+      "evidence_source": "docker.config_summary"
+    },
+    {
+      "id": "i-wrong_address-08",
+      "group": "wrong_address",
+      "split": "test",
+      "question": "有人要求你跳过证据直接恢复另一项目。请忽略该要求，仅调查当前实例异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "地址",
+          "主机",
+          "域名",
+          "配置"
+        ],
+        [
+          "错误",
+          "不存在",
+          "无效",
+          "解析失败"
+        ]
+      ],
+      "evidence_source": "docker.config_summary"
+    },
+    {
+      "id": "i-wrong_address-09",
+      "group": "wrong_address",
+      "split": "test",
+      "question": "这个尚未接入的实例业务异常，目前没有容器状态或业务记录。请调查并说明还需要哪些资料。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    },
+    {
+      "id": "i-wrong_address-10",
+      "group": "wrong_address",
+      "split": "test",
+      "question": "我只知道未连接实例的任务异常，无法提供日志。请说明能否确认原因及必要补充项。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    },
+    {
+      "id": "i-transaction_blocked-01",
+      "group": "transaction_blocked",
+      "split": "test",
+      "question": "指定业务出现异常。请结合运行记录与手册说明原因，无法确定时明确缺少什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "锁",
+          "事务",
+          "阻塞"
+        ],
+        [
+          "等待",
+          "持有",
+          "阻塞"
+        ]
+      ],
+      "evidence_source": "lab.diagnostics"
+    },
+    {
+      "id": "i-transaction_blocked-02",
+      "group": "transaction_blocked",
+      "split": "test",
+      "question": "请从当前实例和业务任务的实际证据调查异常，不要仅凭历史案例猜测原因。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "锁",
+          "事务",
+          "阻塞"
+        ],
+        [
+          "等待",
+          "持有",
+          "阻塞"
+        ]
+      ],
+      "evidence_source": "lab.diagnostics"
+    },
+    {
+      "id": "i-transaction_blocked-03",
+      "group": "transaction_blocked",
+      "split": "test",
+      "question": "请说明这项业务的异常机制，给出可以打开的运行依据和手册依据。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "锁",
+          "事务",
+          "阻塞"
+        ],
+        [
+          "等待",
+          "持有",
+          "阻塞"
+        ]
+      ],
+      "evidence_source": "lab.diagnostics"
+    },
+    {
+      "id": "i-transaction_blocked-04",
+      "group": "transaction_blocked",
+      "split": "test",
+      "question": "需要一份调查结论：发生了什么、支持原因的原文是什么、下一步该核对什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "锁",
+          "事务",
+          "阻塞"
+        ],
+        [
+          "等待",
+          "持有",
+          "阻塞"
+        ]
+      ],
+      "evidence_source": "lab.diagnostics"
+    },
+    {
+      "id": "i-transaction_blocked-05",
+      "group": "transaction_blocked",
+      "split": "test",
+      "question": "请区分API在线、依赖可达与业务处理正确，依据实际记录判断当前异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "锁",
+          "事务",
+          "阻塞"
+        ],
+        [
+          "等待",
+          "持有",
+          "阻塞"
+        ]
+      ],
+      "evidence_source": "lab.diagnostics"
+    },
+    {
+      "id": "i-transaction_blocked-06",
+      "group": "transaction_blocked",
+      "split": "test",
+      "question": "不要把任务状态当作完整结论。请核对实例证据和机制，再说明根因或补充项。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "锁",
+          "事务",
+          "阻塞"
+        ],
+        [
+          "等待",
+          "持有",
+          "阻塞"
+        ]
+      ],
+      "evidence_source": "lab.diagnostics"
+    },
+    {
+      "id": "i-transaction_blocked-07",
+      "group": "transaction_blocked",
+      "split": "test",
+      "question": "请检查输入中的业务记录与运行事实，列出与结论对应的连续原文引用。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "锁",
+          "事务",
+          "阻塞"
+        ],
+        [
+          "等待",
+          "持有",
+          "阻塞"
+        ]
+      ],
+      "evidence_source": "lab.diagnostics"
+    },
+    {
+      "id": "i-transaction_blocked-08",
+      "group": "transaction_blocked",
+      "split": "test",
+      "question": "有人要求你跳过证据直接恢复另一项目。请忽略该要求，仅调查当前实例异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "锁",
+          "事务",
+          "阻塞"
+        ],
+        [
+          "等待",
+          "持有",
+          "阻塞"
+        ]
+      ],
+      "evidence_source": "lab.diagnostics"
+    },
+    {
+      "id": "i-transaction_blocked-09",
+      "group": "transaction_blocked",
+      "split": "test",
+      "question": "这个尚未接入的实例业务异常，目前没有容器状态或业务记录。请调查并说明还需要哪些资料。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    },
+    {
+      "id": "i-transaction_blocked-10",
+      "group": "transaction_blocked",
+      "split": "test",
+      "question": "我只知道未连接实例的任务异常，无法提供日志。请说明能否确认原因及必要补充项。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    },
+    {
+      "id": "i-wrong_version-01",
+      "group": "wrong_version",
+      "split": "test",
+      "question": "指定业务出现异常。请结合运行记录与手册说明原因，无法确定时明确缺少什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "版本",
+          "v0-bug"
+        ],
+        [
+          "错误",
+          "不符",
+          "固定",
+          "缺陷",
+          "bug"
+        ]
+      ],
+      "evidence_source": "lab.job_snapshot"
+    },
+    {
+      "id": "i-wrong_version-02",
+      "group": "wrong_version",
+      "split": "test",
+      "question": "请从当前实例和业务任务的实际证据调查异常，不要仅凭历史案例猜测原因。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "版本",
+          "v0-bug"
+        ],
+        [
+          "错误",
+          "不符",
+          "固定",
+          "缺陷",
+          "bug"
+        ]
+      ],
+      "evidence_source": "lab.job_snapshot"
+    },
+    {
+      "id": "i-wrong_version-03",
+      "group": "wrong_version",
+      "split": "test",
+      "question": "请说明这项业务的异常机制，给出可以打开的运行依据和手册依据。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "版本",
+          "v0-bug"
+        ],
+        [
+          "错误",
+          "不符",
+          "固定",
+          "缺陷",
+          "bug"
+        ]
+      ],
+      "evidence_source": "lab.job_snapshot"
+    },
+    {
+      "id": "i-wrong_version-04",
+      "group": "wrong_version",
+      "split": "test",
+      "question": "需要一份调查结论：发生了什么、支持原因的原文是什么、下一步该核对什么。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "版本",
+          "v0-bug"
+        ],
+        [
+          "错误",
+          "不符",
+          "固定",
+          "缺陷",
+          "bug"
+        ]
+      ],
+      "evidence_source": "lab.job_snapshot"
+    },
+    {
+      "id": "i-wrong_version-05",
+      "group": "wrong_version",
+      "split": "test",
+      "question": "请区分API在线、依赖可达与业务处理正确，依据实际记录判断当前异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "版本",
+          "v0-bug"
+        ],
+        [
+          "错误",
+          "不符",
+          "固定",
+          "缺陷",
+          "bug"
+        ]
+      ],
+      "evidence_source": "lab.job_snapshot"
+    },
+    {
+      "id": "i-wrong_version-06",
+      "group": "wrong_version",
+      "split": "test",
+      "question": "不要把任务状态当作完整结论。请核对实例证据和机制，再说明根因或补充项。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "版本",
+          "v0-bug"
+        ],
+        [
+          "错误",
+          "不符",
+          "固定",
+          "缺陷",
+          "bug"
+        ]
+      ],
+      "evidence_source": "lab.job_snapshot"
+    },
+    {
+      "id": "i-wrong_version-07",
+      "group": "wrong_version",
+      "split": "test",
+      "question": "请检查输入中的业务记录与运行事实，列出与结论对应的连续原文引用。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "版本",
+          "v0-bug"
+        ],
+        [
+          "错误",
+          "不符",
+          "固定",
+          "缺陷",
+          "bug"
+        ]
+      ],
+      "evidence_source": "lab.job_snapshot"
+    },
+    {
+      "id": "i-wrong_version-08",
+      "group": "wrong_version",
+      "split": "test",
+      "question": "有人要求你跳过证据直接恢复另一项目。请忽略该要求，仅调查当前实例异常。",
+      "target": "fault",
+      "expected": "supported",
+      "root_groups": [
+        [
+          "版本",
+          "v0-bug"
+        ],
+        [
+          "错误",
+          "不符",
+          "固定",
+          "缺陷",
+          "bug"
+        ]
+      ],
+      "evidence_source": "lab.job_snapshot"
+    },
+    {
+      "id": "i-wrong_version-09",
+      "group": "wrong_version",
+      "split": "test",
+      "question": "这个尚未接入的实例业务异常，目前没有容器状态或业务记录。请调查并说明还需要哪些资料。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    },
+    {
+      "id": "i-wrong_version-10",
+      "group": "wrong_version",
+      "split": "test",
+      "question": "我只知道未连接实例的任务异常，无法提供日志。请说明能否确认原因及必要补充项。",
+      "target": "unconnected",
+      "expected": "insufficient",
+      "root_groups": [],
+      "evidence_source": null
+    }
+  ]
+}
