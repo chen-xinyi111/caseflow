@@ -25,7 +25,7 @@ def test_empty_database_bootstrap_needs_only_packaged_sources(monkeypatch,tmp_pa
     try:
         with TestClient(app) as c:
             assert c.get('/api/v1/health').status_code==200
-            assert c.get('/api/v1/health').json()['version']=='0.4.0'
+            assert c.get('/api/v1/health').json()['version']=='0.5.0'
             targets=c.get('/api/v1/external-targets').json()
             assert len(targets)==1 and targets[0]['compose_project']=='qinghe-after-sales'
             with connect() as conn:
@@ -33,5 +33,8 @@ def test_empty_database_bootstrap_needs_only_packaged_sources(monkeypatch,tmp_pa
                 assert conn.execute('SELECT count(*) AS n FROM kb_indexes').fetchone()['n']==0
                 assert conn.execute('SELECT count(*) AS n FROM kb_model_calls').fetchone()['n']==0
             assert c.get('/api/v1/investigations/status').json()['available'] is False
+            status=c.get('/api/v1/diagnostic/settings').json()
+            assert status['settings']['enabled'] is False and status['available'] is False
+            assert status['used_today']==0 and c.get('/api/v1/diagnostic/sessions').json()==[]
     finally:
         with connect() as conn:conn.execute(psycopg.sql.SQL('DROP SCHEMA {} CASCADE').format(psycopg.sql.Identifier(schema)))

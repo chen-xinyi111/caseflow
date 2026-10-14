@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -32,6 +33,9 @@ def main():
     parser.add_argument('--check-active', action='store_true')
     args = parser.parse_args()
     with db.connect() as c:
+        if c.execute("SELECT to_regclass('diagnostic_turns') AS t").fetchone()['t']:
+            if c.execute("SELECT count(*) AS n FROM diagnostic_turns WHERE status IN ('queued','running')").fetchone()['n']:
+                raise RuntimeError('Wait for active troubleshooting before taking a backup')
         for table in ['investigations', 'kb_tasks', 'collections']:
             if c.execute(sql.SQL("SELECT count(*) AS n FROM {} WHERE status IN ('queued','running')").format(sql.Identifier(table))).fetchone()['n']:
                 raise RuntimeError('Wait for active tasks before taking a release backup')
@@ -56,12 +60,26 @@ def main():
         shutil.copytree(ROOT / folder, target / folder)
     proof = target / 'proof'
     proof.mkdir()
-    patterns = ['evaluation*.json', 'evaluation*.json.gz', 'demo*.json', 'durability*.json', 'durability*.png', 'delivery-*.json', 'delivery-*.png', 'product*.json', 'product*.png']
+    patterns = ['evaluation*.json', 'evaluation*.json.gz', 'demo*.json', 'durability*.json', 'durability*.png', 'delivery-*.json', 'delivery-*.png', 'product*.json', 'product*.png', 'product-necessary*.xml', 'product-necessary*.txt', 'product-necessary*.cjs', 'product-publication*.xml', 'product-publication*.txt']
     for pattern in patterns:
         for source in (ROOT / '.runtime').glob(pattern):
             if source.is_file():
                 shutil.copy2(source, proof / source.name)
+    for run in (ROOT / '.runtime').glob('value-validation-*'):
+        if not run.is_dir() or not (run / 'results.json').is_file():continue
+        destination=proof/run.name;destination.mkdir()
+        for source in run.iterdir():
+            if source.is_file() and not source.is_symlink() and source.name.endswith(('.json','.json.gz','.md','.py')):
+                shutil.copy2(source,destination/source.name)
     revision = subprocess.check_output(['git', '-c', f'safe.directory={ROOT.as_posix()}', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    with (target / 'source.zip').open('wb') as output:
+        subprocess.run(['git', '-c', f'safe.directory={ROOT.as_posix()}', 'archive', '--format=zip', revision], cwd=ROOT, stdout=output, check=True)
+    previous = sorted((ROOT / '.archives').glob('*/manifest.json'))
+    if previous:
+        prior_revision = json.loads(previous[-1].read_text(encoding='utf-8'))['revision']
+        if not re.fullmatch(r'[a-f0-9]{40,64}', prior_revision):raise ValueError('Invalid archived Git revision')
+        with (target / 'source-previous.zip').open('wb') as output:
+            subprocess.run(['git', '-c', f'safe.directory={ROOT.as_posix()}', 'archive', '--format=zip', prior_revision], cwd=ROOT, stdout=output, check=True)
     manifest = {'created_at': stamp, 'revision': revision, 'tables': baseline, 'restore_verified': False, 'files': {}}
     for file in sorted(target.rglob('*')):
         if file.is_file():
@@ -88,6 +106,7 @@ def main():
     (target / 'RESTORE.md').write_text('私有归档，请勿上传。platform.dump 为 PostgreSQL 16/pgvector 自定义备份。\n'
         '先校验 manifest.json 文件摘要，再在独立空数据库执行 pg_restore --exit-on-error --no-owner --no-privileges。\n'
         '不要覆盖原数据库；验证时不启动 OpsLens 任务处理器。还原不包含密钥，需另行配置。\n'
+        'source.zip保存归档版本的受跟踪源码；source-previous.zip（如有）保留前次归档对应实现。\n'
         '表级数量与内容摘要位于 manifest.json；验证数据库独立保留，不含运行中的任务处理器。\n', encoding='utf-8')
     guide=target/'RESTORE.md'
     manifest['files']['RESTORE.md']={'bytes':guide.stat().st_size,'sha256':hashlib.sha256(guide.read_bytes()).hexdigest()}

@@ -22,7 +22,7 @@ onMounted(refresh)
  <article class="panel"><h3>① 有依据的调查 → 人工批准 → 真实恢复</h3><p>打开worker停止调查，查看当前状态和手册原文。再生成恢复方案；批准前worker保持停止。</p><div class="guide-buttons"><button class="primary" :disabled="!demo?.success_id" @click="investigation(demo?.success_id)">打开成功调查</button><button class="secondary" :disabled="!demo?.success_id" @click="recovery">审阅并生成恢复方案</button></div><p class="muted">批准后预期：新任务完成，字符31、词5，动作记录1条。方案超过10分钟或当前状态已变，须重新生成。</p></article>
  <article class="panel"><h3>② 资料不足 → 说明缺少什么 → 保持现状</h3><p>未连接实例没有可读取的运行事实。系统不能确认原因，也不能为该调查生成恢复方案。</p><button class="secondary" :disabled="!demo?.insufficient_id" @click="investigation(demo?.insufficient_id)">打开信息不足调查</button><p class="muted">补充项只需要脱敏状态和日志，不需要密钥。</p></article>
  </div>
- <article class="panel"><h3>查看已经完成的对照与失败</h3><p>120检索题四种方式、24调查案例单／多对照，共528条结果。重复拒答输入单列共享控制，真实失败保留。</p><button class="secondary" @click="emit('navigate','evaluation')">打开对照评测</button><p class="muted">功能说明、使用边界与运行步骤见README。对外部项目仅支持只读调查和建议；当前恢复限本机故障实验。</p></article>
+ <article class="panel"><h3>查看已经完成的对照与失败</h3><p>120检索题四种方式、24调查案例单／多对照，共528条结果。重复拒答输入单列共享控制，真实失败保留。</p><button class="secondary" @click="emit('navigate','evaluation')">打开对照评测</button><p class="muted">详细边界、运行步骤、复盘和简历材料见README。对外部项目仅支持只读调查和建议；当前恢复限本机故障实验。</p></article>
 </section>
 </template>
 <style scoped>.getting-started{display:grid;gap:20px}.getting-started p{line-height:1.9;font-size:13px}.guide-buttons{display:flex;flex-wrap:wrap;gap:10px}.getting-started h3{line-height:1.8}</style>

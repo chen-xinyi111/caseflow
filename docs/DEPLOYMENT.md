@@ -1,73 +1,66 @@
-# 本机部署与排错
+# 本机部署与故障排查
 
-支持 Windows、PowerShell 7、Docker Desktop Linux 容器、Python 3.12–3.14、Node.js 24 和 pnpm 11。依赖由 `requirements.lock` 与前端锁文件固定；安装脚本也可识别 Codex 附带运行时。
+支持Windows、PowerShell 7、Docker Desktop Linux容器、Python 3.12–3.14、Node.js 24、pnpm 11。当前机器使用Python 3.14、Node 24.19.0、pnpm 11.25.0；脚本也能识别Codex附带运行时，不需要另装一套。依赖使用requirements.lock和frontend/pnpm-lock.yaml，启动不升级依赖。
 
-## 首次安装
+## 第一次使用
+
+在opslens-ai目录打开PowerShell 7，运行：
 
 ```powershell
 ./scripts/local/Setup.ps1
 ./scripts/local/Start.ps1
 ```
 
-在仓库根目录使用 PowerShell 7。Setup 创建虚拟环境、安装后端依赖，并为新目录生成随机数据库密码与诊断密钥。已有 `.env` 和实验配置保留；不会显示密码。首次下载依赖和镜像需要网络。
+Setup安装依赖并生成本机随机配置。已有.env与实验配置保留；不显示密码。首次依赖/镜像下载需要网络，Docker Desktop需已启动。Start默认仅启动平台与平台数据库，打开http://127.0.0.1:18180/。自动导入九份实验手册及关键词索引，不调用任何模型；青禾资料随源码提供并独立初始化。
 
-Start 默认只启动平台与平台数据库，构建前端，入口为 http://127.0.0.1:18180/ 。它导入内置实验手册及关键词索引，并初始化接入项目的文本资料，不调用模型。接入项目只登记精确 Compose 项目名称，不自动启动或匹配其他项目。
+首次实验环境语义调查还需要百炼北京密钥（系统用户环境变量DASHSCOPE_APIKEY）、经过账户页面核验的逐模型免费额度记录及语义索引；缺失时停止，不会付费降级。语义索引构建会调用向量模型，必须先确认免费额度与资料发送授权。本机已有语义索引可复用，演示不需要模型调用。克隆源码不会获得本机语义索引、数据库、配额记录或演示结果，不宣称零配置复现真实模型效果。
 
-## 真实模型与知识索引
-
-平台从本机用户环境变量 `DASHSCOPE_APIKEY` 读取百炼密钥。可在 Windows 的“编辑账户的环境变量”中自行配置，随后重新启动平台；不要提交密钥或粘贴完整 `.env`。
-
-使用 AI 调查前，在百炼账户页面核对各模型的免费余额、到期与用完即停设置。本版本没有额度配置表单：维护者需在被 Git 忽略的 `.runtime/model-quota.json` 保存实际核验记录。知识库的“导入文档与管理索引”区域用于文档和索引管理，只显示模型就绪状态。
-
-记录结构如下；占位符需由自己的账户核验事实替换，`free_only_effective` 只有实际确认用完即停后才能设为 `true`。默认调查生成模型为 `qwen3.8-max`；向量与重排分别使用 `text-embedding-v4`、`gte-rerank-v2`，按需要在 `models` 中添加同结构条目。
-
-```json
-{
-  "key_sha256": "SHA256_OF_YOUR_LOCAL_KEY",
-  "api_base": "https://dashscope.aliyuncs.com/api/v1",
-  "models": {
-    "qwen3.8-max": {
-      "region": "cn-beijing",
-      "free_only_effective": false,
-      "verified_at": "YOUR_ACTUAL_VERIFICATION_TIME_WITH_UTC_OFFSET",
-      "expires_at": "YOUR_ACCOUNT_EXPIRY_TIME_WITH_UTC_OFFSET",
-      "remaining_tokens": 0
-    }
-  }
-}
-```
-
-`key_sha256` 是密钥 UTF-8 字节的 SHA-256 摘要；文件不保存密钥本身。余额填写核验时实际剩余 token 数，时间使用带时区的 ISO 8601。平台在核验后 24 小时、账户到期或预算不足时停止调用，不自动付费降级；不要把示例占位符当作已核验配置。
-
-外部项目在本机使用所选项目资料的 BM25 检索，无需语义索引；AI 调查仍需有效模型额度和针对当前快照的发送确认。实验语义检索需在知识库构建向量索引，向量和重排使用相应模型额度。确认自己愿意向百炼北京接口发送所选内容后再操作；配置密钥本身不等于同意发送业务资料。
-
-克隆源码不会获得原维护者的数据库、索引、账户记录、演示调查或真实评测结果。
-
-## 启停与范围
+## 重启与范围
 
 ```powershell
-./scripts/local/Check.ps1 -Scope Platform
-./scripts/local/Start.ps1 -Scope Platform
-./scripts/local/RestartPlatform.ps1
+./scripts/local/Check.ps1 -Scope Platform       # 只读预检
+./scripts/local/Start.ps1 -Scope Platform       # 升级/启动平台，保留实验状态
+./scripts/local/RestartPlatform.ps1            # 构建页面，只重启平台
+./scripts/local/Start.ps1 -Scope Platform -SkipBuild  # 使用已构建页面
 ./scripts/local/Status.ps1
-./scripts/local/Stop.ps1 -Scope Platform
+./scripts/local/Stop.ps1 -Scope Platform        # 只停止平台和平台数据库
 ```
 
-默认 `Platform` 只作用于平台。显式 `Fault` 包含平台及故障实验，`All` 才包含正常实验。完整 Start 会启动所选实验服务；准备好故障后应使用 `RestartPlatform.ps1` 或仅平台范围，以免改变故障状态。Stop 保留数据卷。
+默认Scope Platform不改任何实验或接入项目服务；显式Scope Fault包括平台、故障实例，Scope All才包括正常实例。完整Start会启动所选实验服务，适合首次启动；准备故障后保留默认Platform范围，不显式启动Fault/All。准备好故障后仅重启平台。Stop使用同样范围且保留数据卷；不提供一键清库或删卷。
 
-平台 HTTP 为 18180，正常／故障实验 API 为 18181／18182，平台数据库为 18183，均只绑定 127.0.0.1。预检要求 Linux 引擎、Docker 内存至少 2 GiB、本机可用内存至少 2 GiB、项目磁盘至少 4 GiB 空闲；建议 Docker 分配 4 GiB 或更多。
+## 资源与端口
 
-## 常见问题
+预检要求Docker Linux引擎、Docker总内存≥2GiB、本机可用内存≥2GiB、项目磁盘空闲≥4GiB；建议Docker至少4GiB，长时间评测留更多内存/空间。它是最低启动门槛，不是并发容量或性能承诺。Docker镜像存储可能位于其他磁盘，下载时也需要相应空间。
+
+18180平台HTTP、18182故障API、18183平台数据库，仅绑定127.0.0.1；正常API18181仅Scope All启动。资源不足、Docker未启动、外来端口占用则停止，不会杀已有服务。运行中平台需PID/进程与health共同核对，不能只凭版本认领端口。
+
+## 常见提示
 
 | 提示 | 处理 |
-| --- | --- |
-| Docker 不可用或不是 Linux 引擎 | 打开 Docker Desktop，等待引擎就绪，确认 Linux 容器模式。 |
-| Python、Node.js 或 pnpm 缺失 | 安装上述版本，重新打开终端并运行 Setup。 |
-| 端口被其他服务占用 | 核对占用程序；脚本不会替你终止其他进程。 |
-| 平台未就绪或数据库不可用 | 运行 Status，查看 `.runtime` 中的平台 stderr 日志，避免公开配置和密钥。 |
-| 模型额度未核验或已失效 | 在模型账户核对后，更新本机核验记录；不会自动续费。 |
-| 外部项目未发现容器 | 检查登记的精确项目名和服务名；缺失采集范围不等于已确认业务根因。 |
-| 恢复方案过期或当前状态变化 | 重新核对并生成方案，不反复执行旧动作。 |
-| 执行或模型响应未知 | 保留记录并核对已有结果，不盲目重复请求。 |
+|---|---|
+| Docker无法访问或不是Linux | 打开Docker Desktop，等待引擎就绪，检查Linux容器模式 |
+| Python/Node/pnpm缺失 | 按上述版本安装或使用当前Codex附带路径；先运行Setup |
+| 固定端口被其他服务占用 | 手动确认占用程序，选择是否停止；脚本不会替你杀进程 |
+| PID属于其他进程 | 保留该进程；核对.runtime/platform.pid是否过期，不自行修改PID强杀 |
+| 前端依赖下载连接失败 | 网络恢复后重新运行Setup；已安装的依赖可继续构建 |
+| 数据库不可用/工作台未就绪 | 运行Status，查看.runtime/platform-logs.json指向的本次stderr日志；不要贴密钥或整个.env |
+| 模型额度待核验/已失效 | 到百炼北京免费额度页核对各模型剩余、到期、用完即停，再更新本机核验记录；不自动续费 |
+| 方案超过十分钟/状态变化 | 重新查看当前状态并生成方案，再审阅批准；旧动作不会重发 |
+| 演示还有未完成任务 | 等任务终结后再准备，原记录不会被强制清理 |
 
-运行日志、数据库卷、模型响应及账户配置仅在本机保存。私有备份见 [备份与还原](ARCHIVE.md)，用户操作见 [使用说明](PRODUCT.md)。
+平台按启动时间保存的stdout、stderr、数据库卷、模型请求响应及配额截图只留本机忽略目录。已提供Backup.ps1私有一致性备份及独立数据库还原验证，见ARCHIVE.md。没有远程、多租户或公网部署能力。不要手动删除未知调用记录。外部项目采集无需模型密钥或语义索引；AI调查另需密钥、有效额度和针对快照的发送确认。
+
+
+## 0.5 模型配置与升级
+
+升级现有实例前运行 `Backup.ps1 -VerifyRestore`，没有活动任务时才暂停平台、导出和独立还原；旧数据不清除。新八表在平台启动时增量初始化，默认模型关闭，旧接口保留。
+
+全新安装的日志扫描、引用原文、记录与导出只需平台数据库，不依赖当前机器的私有额度文件、旧语义索引、演示记录或青禾目录。AI分析另需配置模型和密钥，缺失时不会发送资料。
+
+兼容模型基础地址填写 `https://服务商/v1`，本机模型可使用 `http://127.0.0.1:端口/v1`；填写具体模型名及服务端密钥环境变量名，例如 `OPSLENS_MODEL_KEY`。将变量配置到服务端进程环境或本机忽略的 `.env`，重启平台后在设置明确启用。不要在URL、模型名、浏览器、报告或源码中填写密钥。百炼免费模式仍使用DASHSCOPE_APIKEY及原免费额度保护。
+
+默认每日20次请求（北京时间），可显式调整至1–200；输出上限256–2048。未知调用也占请求名额，更正计数，预算耗尽停止。这些上限不表示精确费用或余额保护；兼容模式不会自动选择付费模型。
+
+官方文档白名单在设置维护，完整小写域名，无通配符。10秒HTTP超时、1MiB正文上限、公网地址和每跳域名校验。抓取失败保留本机日志能力。
+
+新排查链路不需要语义索引或业务任务工具。仅依赖原持久队列/数据库，不新增消息中间件或Agent服务。安装检查验证了空数据库初始化与缺密钥行为，未在第二台全新机器下载所有运行时与镜像，不把当前机器升级验证冒充完整全新部署实测。

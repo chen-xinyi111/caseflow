@@ -22,12 +22,17 @@ from opslens.recovery.worker import worker as recovery_worker
 from opslens.evaluation.api import router as evaluation_router
 from opslens.demo import router as demo_router
 from opslens.external import router as external_router, initialize as initialize_external
+from opslens.diagnostic.api import router as diagnostic_router
+from opslens.diagnostic.store import initialize as initialize_diagnostic
+from opslens.diagnostic.worker import worker as diagnostic_worker
 
 
 @asynccontextmanager
 async def lifespan(app):
     db.initialize()
     initialize_external()
+    initialize_diagnostic()
+    diagnostic_task=asyncio.create_task(diagnostic_worker())
     worker_task = asyncio.create_task(worker())
     knowledge_task = asyncio.create_task(knowledge_worker())
     investigation_task = asyncio.create_task(investigation_worker())
@@ -37,6 +42,7 @@ async def lifespan(app):
     knowledge_task.cancel()
     investigation_task.cancel()
     recovery_task.cancel()
+    diagnostic_task.cancel()
     with suppress(asyncio.CancelledError):
         await worker_task
     with suppress(asyncio.CancelledError):
@@ -45,15 +51,18 @@ async def lifespan(app):
         await investigation_task
     with suppress(asyncio.CancelledError):
         await recovery_task
+    with suppress(asyncio.CancelledError):
+        await diagnostic_task
 
 
-app = FastAPI(title="OpsLens AI", version="0.4.0", lifespan=lifespan)
+app = FastAPI(title="OpsLens AI", version="0.5.0", lifespan=lifespan)
 app.include_router(knowledge_router)
 app.include_router(investigation_router)
 app.include_router(recovery_router)
 app.include_router(evaluation_router)
 app.include_router(demo_router)
 app.include_router(external_router)
+app.include_router(diagnostic_router)
 
 
 @app.middleware("http")

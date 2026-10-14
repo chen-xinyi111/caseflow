@@ -10,4 +10,4 @@ try {
     & $PythonExe @taskDemoArgs
     Assert-Native '真实演示准备'
 } finally { & "$PSScriptRoot/RestartPlatform.ps1" -SkipBuild }
-Write-Output '打开工作台 → 维护与记录 → 示例记录。准备演示只改变故障实例；恢复仍须页面批准。'
+Write-Output '打开工作台 → 开始使用。准备演示只改变故障实例；恢复仍须页面批准。'

@@ -34,7 +34,7 @@ $taskProcess=Start-Process -FilePath $PythonExe -ArgumentList @('-m','uvicorn','
 for ($taskAttempt=0;$taskAttempt -lt 40;$taskAttempt++) {
     try {
         $taskHealth=Invoke-RestMethod 'http://127.0.0.1:18180/api/v1/health' -TimeoutSec 2
-        if ($taskHealth.delivery -eq '3.3' -and $taskHealth.version -eq '0.4.0') { Write-Output 'OpsLens ready: http://127.0.0.1:18180/'; return }
+        if ($taskHealth.delivery -eq '3.3' -and $taskHealth.version -eq '0.5.0') { Write-Output 'OpsLens ready: http://127.0.0.1:18180/'; return }
     } catch {}
     Start-Sleep -Milliseconds 500
 }

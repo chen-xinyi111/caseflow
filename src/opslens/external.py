@@ -24,7 +24,7 @@ def digest(value):
 
 def sanitize(text):
     value = redact(text, secrets())
-    value = re.sub(r'(?i)([a-z]:[\\/](?:[^\s"<>]+))', '[LOCAL_PATH]', value)
+    value = re.sub(r'(?i)(?<![A-Za-z0-9])([a-z]:[\\/](?:[^\s"<>]+))', '[LOCAL_PATH]', value)
     value = re.sub(r'(?<![\w.+-])[\w.+-]{1,128}@[\w.-]{1,253}\.[A-Za-z]{2,}', '[EMAIL]', value)
     value = re.sub(r'''(?i)(["']?(?:authorization|cookie|set-cookie)["']\s*:\s*["'])[^"'\r\n]+''', r'\1[REDACTED]', value)
     value = re.sub(r'(?<!\d)1[3-9]\d{9}(?!\d)', '[PHONE]', value)

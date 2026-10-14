@@ -18,7 +18,7 @@ function Get-Docker {
 }
 function Import-LocalSettings {
     foreach ($taskLine in (Get-Content -LiteralPath (Join-Path $ProjectRoot '.env'))) {
-        if ($taskLine -match '^([A-Z_]+)=(.*)$') {
+        if ($taskLine -match '^([A-Z][A-Z0-9_]*)=(.*)$') {
             [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], 'Process')
         }
     }
