@@ -844,6 +844,118 @@
         }
       }
     },
+    "/api/v1/caseflow/projects/{pid}/numeric-rules": {
+      "post": {
+        "tags": [
+          "CaseFlow"
+        ],
+        "summary": "Numeric Rule",
+        "operationId": "numeric_rule_api_v1_caseflow_projects__pid__numeric_rules_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NumericRule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/numeric-rules/{rid}/disable": {
+      "post": {
+        "tags": [
+          "CaseFlow"
+        ],
+        "summary": "Disable Numeric Rule",
+        "operationId": "disable_numeric_rule_api_v1_caseflow_projects__pid__numeric_rules__rid__disable_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "rid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Rid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Revision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/caseflow/tasks/{tid}": {
       "get": {
         "tags": [
@@ -4313,6 +4425,11 @@
             "maxLength": 2000,
             "minLength": 1,
             "title": "Review Note"
+          },
+          "acknowledge_grounding": {
+            "type": "boolean",
+            "title": "Acknowledge Grounding",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -4572,6 +4689,11 @@
             "maxLength": 2000,
             "title": "Review Note",
             "default": ""
+          },
+          "acknowledge_grounding": {
+            "type": "boolean",
+            "title": "Acknowledge Grounding",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -6921,6 +7043,90 @@
         "type": "object",
         "title": "ModelSettings"
       },
+      "NumericRule": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "metric": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Metric"
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 10,
+            "title": "Unit",
+            "default": ""
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "range",
+              "discount"
+            ],
+            "title": "Kind"
+          },
+          "minimum": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Minimum",
+            "default": ""
+          },
+          "maximum": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Maximum",
+            "default": ""
+          },
+          "threshold": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Threshold",
+            "default": ""
+          },
+          "discount": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Discount",
+            "default": ""
+          },
+          "requirement_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Requirement Ids"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision",
+          "name",
+          "metric",
+          "kind",
+          "requirement_ids"
+        ],
+        "title": "NumericRule"
+      },
       "Original": {
         "properties": {
           "id": {
@@ -8528,7 +8734,8 @@
             "enum": [
               "extract",
               "generate",
-              "index"
+              "index",
+              "review"
             ],
             "title": "Kind"
           },
@@ -8554,6 +8761,15 @@
           "consent": {
             "type": "boolean",
             "title": "Consent"
+          },
+          "case_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Case Ids"
           }
         },
         "additionalProperties": false,

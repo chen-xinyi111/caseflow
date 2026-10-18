@@ -261,6 +261,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/caseflow/projects/{pid}/numeric-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Numeric Rule */
+        post: operations["numeric_rule_api_v1_caseflow_projects__pid__numeric_rules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/numeric-rules/{rid}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disable Numeric Rule */
+        post: operations["disable_numeric_rule_api_v1_caseflow_projects__pid__numeric_rules__rid__disable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/caseflow/tasks/{tid}": {
         parameters: {
             query?: never;
@@ -1496,6 +1530,11 @@ export interface components {
             status: "approved" | "rejected";
             /** Review Note */
             review_note: string;
+            /**
+             * Acknowledge Grounding
+             * @default false
+             */
+            acknowledge_grounding: boolean;
         };
         /** Body_files_api_v1_diagnostic_sessions__sid__files_post */
         Body_files_api_v1_diagnostic_sessions__sid__files_post: {
@@ -1589,6 +1628,11 @@ export interface components {
              * @default
              */
             review_note: string;
+            /**
+             * Acknowledge Grounding
+             * @default false
+             */
+            acknowledge_grounding: boolean;
         };
         /** Cause */
         Cause: {
@@ -2524,6 +2568,52 @@ export interface components {
             /** Official Hosts */
             official_hosts?: string[];
         };
+        /** NumericRule */
+        NumericRule: {
+            /** Revision */
+            revision: number;
+            /** Name */
+            name: string;
+            /** Metric */
+            metric: string;
+            /**
+             * Unit
+             * @default
+             */
+            unit: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "range" | "discount";
+            /**
+             * Minimum
+             * @default
+             */
+            minimum: string;
+            /**
+             * Maximum
+             * @default
+             */
+            maximum: string;
+            /**
+             * Threshold
+             * @default
+             */
+            threshold: string;
+            /**
+             * Discount
+             * @default
+             */
+            discount: string;
+            /** Requirement Ids */
+            requirement_ids: string[];
+            /**
+             * Confirmed
+             * @default false
+             */
+            confirmed: boolean;
+        };
         /** Original */
         Original: {
             /**
@@ -3213,13 +3303,15 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "extract" | "generate" | "index";
+            kind: "extract" | "generate" | "index" | "review";
             /** Document Ids */
             document_ids: string[];
             /** Requirement Ids */
             requirement_ids?: string[];
             /** Consent */
             consent: boolean;
+            /** Case Ids */
+            case_ids?: string[];
         };
         /** Text */
         Text: {
@@ -3948,6 +4040,77 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    numeric_rule_api_v1_caseflow_projects__pid__numeric_rules_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NumericRule"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disable_numeric_rule_api_v1_caseflow_projects__pid__numeric_rules__rid__disable_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                rid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Revision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -225,6 +225,9 @@ def test_agent_validation_feedback_is_bounded_and_never_saves_bad_batch(state,mo
         def __init__(self):self.keys=[]
         def generate(self,messages,tools,key):
             self.keys.append(key);assert state==before
+            if key=='grounding:0':
+                fields=[{'field':f,'status':'test_data' if f=='data' else 'test_action' if f=='steps' else 'supported','reason':'受控复核','source_indexes':[0] if f in ('preconditions','expected') else []} for f in ('preconditions','data','steps','expected')]
+                return {'content':json.dumps({'reviews':[{'case_index':0,'fields':fields}]}),'usage':{'total_tokens':10}}
             n=int(key.split(':')[-1])
             if n==0:
                 return {'role':'assistant','content':'','tool_calls':[{'id':str(uuid4()),'function':{'name':name,'arguments':'{}'}} for name in ('read_requirements','existing_cases')],'usage':{'total_tokens':10}}
@@ -237,11 +240,12 @@ def test_agent_validation_feedback_is_bounded_and_never_saves_bad_batch(state,mo
     provider=Provider();task={'input':{'document_ids':[did],'requirement_ids':[rid]}}
     if fixed:
         result=agent.generate(task,state,provider,Runtime())
-        assert result==[case(state)|{'replaces_case_id':None}]
+        assert {k:v for k,v in result[0].items() if k!='grounding'}==case(state)|{'replaces_case_id':None,'numeric_input':None}
+        assert result[0]['grounding']['status']=='checked'
     else:
         with pytest.raises(ValueError,match='生成结果未通过校验，未保存用例'):
             agent.generate(task,state,provider,Runtime())
-    assert provider.keys==['generate:0','generate:1','generate:2']
+    assert provider.keys==['generate:0','generate:1','generate:2']+(['grounding:0'] if fixed else [])
     assert state==before and len([e for e in events if e[0]=='validation'])==1
 
 
@@ -255,11 +259,11 @@ def test_agent_validation_repair_cannot_exceed_total_model_call_limit(state,monk
     class Provider:
         def generate(self,messages,tools,key):
             calls.append(key);n=int(key.split(':')[-1])
-            if n<5:
+            if n<4:
                 names=('read_requirements','existing_cases') if n==0 else ('read_requirements',)
                 return {'role':'assistant','content':'','tool_calls':[{'id':key+name,'function':{'name':name,'arguments':'{}'}} for name in names],'usage':{'total_tokens':10}}
             bad=copy.deepcopy(case(state));bad['citations'][0]=bad['citations'][0]|{'quote':'不存在的原文'}
             return {'role':'assistant','content':json.dumps({'cases':[bad]}),'usage':{'total_tokens':10}}
     with pytest.raises(ValueError,match='生成结果未通过校验'):
         agent.generate({'input':{'document_ids':[state['documents'][0]['id']],'requirement_ids':[state['requirements'][0]['id']]}},state,Provider(),Runtime())
-    assert len(calls)==6 and state==before
+    assert len(calls)==5 and state==before  # One of six model calls is reserved for evidence review.

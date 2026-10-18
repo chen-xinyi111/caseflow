@@ -36,6 +36,13 @@ class ControlledProvider:
     def __init__(self,rt,cfg):self.rt=rt;self.calls=0
     def generate(self,messages,tools,key):
         def response():
+            if key=='grounding:0':
+                payload=json.loads(messages[-1]['content']);reviews=[]
+                for i,item in enumerate(payload['cases']):
+                    refs=[j for j,r in enumerate(payload['sources']) if r['id'] in item['requirement_ids']]
+                    fields=[{'field':f,'status':'test_data' if f=='data' else 'test_action' if f=='steps' else 'supported','reason':'受控复核','source_indexes':refs if f in ('preconditions','expected') else []} for f in ('preconditions','data','steps','expected')]
+                    reviews.append({'case_index':i,'fields':fields})
+                return {'content':json.dumps({'reviews':reviews}),'usage':{'total_tokens':10}}
             if key.startswith('extract:'):
                 data=json.loads(messages[-1]['content']);line=data['text'].splitlines()[0][:120]
                 content={'requirements':[{'text':line,'citations':[{'document_id':data['document_id'],'page':data['page'],'quote':line}],'questions':[]}]}
@@ -66,7 +73,7 @@ def test_full_agent_rag_review_export_execution(client,monkeypatch):
     agent.process(durability.claim('caseflow'))
     task=client.get('/api/v1/caseflow/tasks/'+t.json()['id']).json();assert task['status']=='completed',task
     p=client.get(url).json();case=p['state']['cases'][0]
-    p=client.post(url+'/cases/'+case['id'],json={'revision':p['revision'],'expected':'人工确认：其他条件满足时允许30分钟预约','status':'approved','review_note':'控制检查，核对了原文和步骤'}).json()
+    p=client.post(url+'/cases/'+case['id'],json={'revision':p['revision'],'expected':'人工确认：其他条件满足时允许30分钟预约','status':'approved','review_note':'控制检查，核对了原文和步骤','acknowledge_grounding':True}).json()
     assert p['state']['summary']['approved']==1
     case=p['state']['cases'][0]
     export=client.get(url+'/export?format=xlsx');assert export.status_code==200 and export.content[:2]==b'PK'
@@ -265,7 +272,7 @@ def test_execution_import_binds_revision_and_preserves_all_or_nothing(client,mon
     p=client.post(url+'/runs/import',data={'revision':p['revision'],'name':'旧批次','request_id':str(uuid4())},files={'file':('results.xlsx',raw)}).json()
     assert p['state']['runs'][-1]['results'][0]['current']
     p=client.post(url+'/requirements/'+r['id'],json={'revision':p['revision'],'text':'预约时长为30至180分钟。','status':'confirmed'}).json()
-    p=client.post(url+'/cases/'+case['id'],json={'revision':p['revision'],'status':'approved','review_note':'重新核对新规则'}).json()
+    p=client.post(url+'/cases/'+case['id'],json={'revision':p['revision'],'status':'approved','review_note':'重新核对新规则','acknowledge_grounding':True}).json()
     assert p['state']['cases'][0]['revision']==2
     late=','.join(files.RESULT_HEADERS)+'\nT001,1,未执行,补录旧规则'
     response=client.post(url+'/runs/import',data={'revision':p['revision'],'name':'旧批次补录','request_id':str(uuid4())},files={'file':('late.csv',late.encode())})
@@ -288,7 +295,7 @@ def test_manual_requirement_scope_quote_and_confirmation(client):
 def test_agent_repairs_invalid_quote_before_atomic_commit(client,monkeypatch):
     class RepairProvider(ControlledProvider):
         def generate(self,messages,tools,key):
-            if key.startswith('extract:') or key in ('generate:0','generate:1'):
+            if key.startswith('extract:') or key in ('generate:0','generate:1','grounding:0'):
                 return super().generate(messages,tools,key)
             def response():
                 req=json.loads(next(m['content'] for m in messages if m.get('tool_call_id')=='req'))[0]
@@ -311,3 +318,92 @@ def test_agent_repairs_invalid_quote_before_atomic_commit(client,monkeypatch):
         assert json.loads(invalid['result']['content'])['cases'][0]['citations'][0]['quote']=='模型改写的预约规则'
         assert c.execute("SELECT count(*) n FROM cf_events WHERE task_id=%s AND kind='validation'",(t['id'],)).fetchone()['n']==1
         assert c.execute('SELECT count(*) n FROM cf_requests').fetchone()['n']==0
+
+
+def confirmed_project(client,monkeypatch,provider=ControlledProvider):
+    monkeypatch.setattr(agent,'Provider',provider)
+    p=project(client);url='/api/v1/caseflow/projects/'+p['id']
+    client.post(url+'/tasks',json=task_body(p,'extract'));agent.process(durability.claim('caseflow'))
+    p=client.get(url).json();r=p['state']['requirements'][0]
+    return client.post(url+'/requirements/'+r['id'],json={'revision':p['revision'],'text':r['text'],'status':'confirmed'}).json()
+
+
+def test_numeric_rule_confirmation_source_scope_and_stale_requirement(client,monkeypatch):
+    p=confirmed_project(client,monkeypatch);r=p['state']['requirements'][0];url='/api/v1/caseflow/projects/'+p['id']
+    rule={'revision':p['revision'],'name':'预约时长范围','metric':'预约时长','unit':'分钟','kind':'range','minimum':'30','maximum':'120','requirement_ids':[r['id']],'confirmed':True}
+    assert client.post(url+'/numeric-rules',json=rule|{'confirmed':False}).status_code==400
+    assert client.post(url+'/numeric-rules',json=rule|{'maximum':'999'}).status_code==400
+    foreign=project(client)['state']['documents'][0]['id']
+    assert client.post(url+'/numeric-rules',json=rule|{'requirement_ids':[foreign]}).status_code==404
+    response=client.post(url+'/numeric-rules',json=rule);assert response.status_code==200,response.text
+    p=response.json();numeric=p['state']['numeric_rules'][0];assert numeric['current']
+    p=client.post(url+'/requirements/'+r['id'],json={'revision':p['revision'],'text':'预约时长为30至180分钟。','status':'confirmed'}).json()
+    assert not p['state']['numeric_rules'][0]['current']
+    p=client.post(url+'/numeric-rules/'+numeric['id']+'/disable',json={'revision':p['revision']}).json()
+    assert not p['state']['numeric_rules'][0]['enabled']
+
+
+def test_saved_case_evidence_task_is_scoped_and_requires_warning_acknowledgement(client,monkeypatch):
+    class WarningProvider(ControlledProvider):
+        def generate(self,messages,tools,key):
+            if key!='grounding:0':return super().generate(messages,tools,key)
+            def warning():
+                fields=[{'field':f,'status':'test_data' if f=='data' else 'test_action' if f=='steps' else 'supported','reason':'受控复核','source_indexes':[0] if f in ('preconditions','expected') else []} for f in ('preconditions','data','steps','expected')]
+                fields[-1].update(status='unsupported',reason='原文未要求提示')
+                return {'content':json.dumps({'reviews':[{'case_index':0,'fields':fields}]}),'usage':{'total_tokens':10}}
+            return self.rt.operation(key,warning,paid=True)
+    p=confirmed_project(client,monkeypatch,WarningProvider);r=p['state']['requirements'][0];url='/api/v1/caseflow/projects/'+p['id']
+    item={'title':'人工构造检查','preconditions':'存在可预约时段','data':'30分钟','steps':['尝试预约'],'expected':'提示固定文案','requirement_ids':[r['id']],'citations':r['citations'],'basis':'explicit','category':'正常'}
+    p=store.public(store.update(p['id'],p['revision'],'controlled_fixture',lambda s:store.add_cases(s,[item],[r['id']],[r['document_id']])))
+    case=p['state']['cases'][0];body=task_body(p,'review')|{'case_ids':[case['id']]}
+    assert client.post(url+'/tasks',json=body|{'case_ids':[str(uuid4())]}).status_code==404
+    assert client.post(url+'/tasks',json=body|{'requirement_ids':[]}).status_code==400
+    t=client.post(url+'/tasks',json=body);assert t.status_code==202,t.text
+    assert client.post(url+'/tasks',json=body|{'case_ids':[]}).status_code==409
+    agent.process(durability.claim('caseflow'))
+    assert client.get('/api/v1/caseflow/tasks/'+t.json()['id']).json()['status']=='completed'
+    p=client.get(url).json();checked=p['state']['cases'][0]
+    assert checked['expected']==item['expected'] and checked['revision']==case['revision']
+    assert checked['grounding']['status']=='needs_confirmation' and checked['grounding']['current']
+    review={'revision':p['revision'],'status':'approved','review_note':'人工核对说明'}
+    assert client.post(url+'/cases/'+case['id'],json=review).status_code==400
+    approved=client.post(url+'/cases/'+case['id'],json=review|{'acknowledge_grounding':True})
+    assert approved.status_code==200 and approved.json()['state']['cases'][0]['grounding_ack']['note']
+
+
+def test_unavailable_semantic_review_keeps_only_structurally_valid_drafts(client,monkeypatch):
+    from opslens.rag.provider import ModelBlocked
+    class Unavailable(ControlledProvider):
+        def generate(self,messages,tools,key):
+            if key=='grounding:0':raise ModelBlocked('受控复核预算不足')
+            return super().generate(messages,tools,key)
+    p=confirmed_project(client,monkeypatch,Unavailable);url='/api/v1/caseflow/projects/'+p['id']
+    t=client.post(url+'/tasks',json=task_body(p,'generate')).json();agent.process(durability.claim('caseflow'))
+    result=client.get('/api/v1/caseflow/tasks/'+t['id']).json()
+    assert result['status']=='completed' and '自动依据复核未完成' in result['result']['message']
+    p=client.get(url).json();case=p['state']['cases'][0]
+    assert case['status']=='draft' and case['grounding']['status']=='unavailable'
+    assert client.post(url+'/cases/'+case['id'],json={'revision':p['revision'],'status':'approved','review_note':'未勾选核对'}).status_code==400
+
+
+def test_generated_numeric_expectation_is_computed_and_manual_edits_drop_calculation(client,monkeypatch):
+    class NumericProvider(ControlledProvider):
+        def generate(self,messages,tools,key):
+            if key!='generate:2':return super().generate(messages,tools,key)
+            def result():
+                req=json.loads(next(m['content'] for m in messages if m.get('tool_call_id')=='req'))[0]
+                rule=json.loads(messages[1]['content'])['numeric_rules'][0]
+                item={'title':'检查121分钟上界之外','preconditions':'存在空闲时段','data':'模型输入文字','steps':['尝试预约'],'expected':'模型误写允许预约','category':'边界','basis':'explicit','requirement_ids':[req['id']],'citations':req['citations'],'numeric_input':{'rule_id':rule['id'],'value':'121'}}
+                return {'role':'assistant','content':json.dumps({'cases':[item]}),'usage':{'total_tokens':10}}
+            return self.rt.operation(key,result,paid=True)
+    p=confirmed_project(client,monkeypatch,NumericProvider);r=p['state']['requirements'][0];url='/api/v1/caseflow/projects/'+p['id']
+    rule={'revision':p['revision'],'name':'时长','metric':'预约时长','unit':'分钟','kind':'range','minimum':'30','maximum':'120','requirement_ids':[r['id']],'confirmed':True}
+    p=client.post(url+'/numeric-rules',json=rule).json()
+    t=client.post(url+'/tasks',json=task_body(p,'generate')).json();agent.process(durability.claim('caseflow'))
+    assert client.get('/api/v1/caseflow/tasks/'+t['id']).json()['status']=='completed'
+    p=client.get(url).json();case=p['state']['cases'][0]
+    assert '不符合' in case['expected'] and case['data']=='预约时长：121分钟'
+    assert case['calculation']['original_expected']=='模型误写允许预约'
+    response=client.post(url+'/cases/'+case['id'],json={'revision':p['revision'],'data':'人工输入','status':'draft'})
+    changed=response.json()['state']['cases'][0]
+    assert changed['data']=='人工输入' and 'calculation' not in changed and not changed['grounding']['current']

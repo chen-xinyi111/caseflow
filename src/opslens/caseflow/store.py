@@ -204,6 +204,7 @@ def add_cases(s,items,allowed_requirements,allowed_documents):
 
 def edit_case(s,cid,values):
     row=find(s['cases'],cid)
+    acknowledge=values.pop('acknowledge_grounding',False)
     if row.get('applied_to'):raise ValueError('此建议已应用，请查看并编辑原用例')
     snapshot(s,'case',row)
     explicit_approval=values.get('status')=='approved'
@@ -212,6 +213,7 @@ def edit_case(s,cid,values):
     changed=any(row.get(k)!=v for k,v in values.items())
     if changed:
         row.update(values);row['revision']+=1
+        row.pop('calculation',None);row['numeric_input']=None;row.pop('grounding_ack',None)
         if status=='approved' and not explicit_approval:status='draft';note=''
     if status=='approved':
         if row.get('replaces_case_id') and not row.get('applied_to'):raise ValueError('请先将修改建议应用到原用例，再审核原用例')
@@ -219,6 +221,10 @@ def edit_case(s,cid,values):
         reqs=[find(s['requirements'],i) for i in row['requirement_ids']]
         if any(r['status']!='confirmed' for r in reqs):raise ValueError('关联需求尚未确认或已移除')
         if not note.strip():raise ValueError('审核通过前请填写核对说明，确认规则与预期结果')
+        from . import grounding
+        if grounding.acknowledgement_needed(s,row) and not acknowledge:
+            raise ValueError('依据检查存在待确认内容或已失效；请重新检查，或逐项核对后明确确认并填写审核说明')
+        if acknowledge:row['grounding_ack']={'at':now(),'note':clean(note),'fingerprint':grounding.fingerprint(s,row)}
         current_revisions={r['id']:r['revision'] for r in reqs}
         if current_revisions!=row['requirement_revisions'] and not changed:row['revision']+=1
         row['requirement_revisions']=current_revisions;row['reviewed_at']=now()
@@ -234,7 +240,10 @@ def accept_proposal(s,cid):
         r=find(s['requirements'],rid)
         if r['revision']!=rev or r['status']!='confirmed':raise FileExistsError('建议依据的需求已经更新或尚未确认')
     snapshot(s,'case',target)
-    for key in ('title','preconditions','data','steps','expected','category','basis','citations','requirement_ids','requirement_revisions'):target[key]=copy.deepcopy(proposal[key])
+    for key in ('title','preconditions','data','steps','expected','category','basis','citations','requirement_ids','requirement_revisions','grounding','numeric_input','calculation'):
+        if key in proposal:target[key]=copy.deepcopy(proposal[key])
+        else:target.pop(key,None)
+    target.pop('grounding_ack',None)
     target['revision']+=1;target['status']='draft';target['review_note']='';proposal['status']='rejected';proposal['applied_to']=target['id']
     return {'case_id':target['id']}
 
@@ -269,6 +278,11 @@ def summary(s):
 
 def public(p):
     s=copy.deepcopy(p['state']);s['summary']=summary(s)
+    from . import grounding
+    for rule in s.get('numeric_rules',[]):rule['current']=grounding.current_rule(s,rule)
+    # Compute against stored state: presentation-only 'current' flags are not fingerprint inputs.
+    for case in s['cases']:
+        if case.get('grounding'):case['grounding']['current']=grounding.report_current(p['state'],case)
     for run in s['runs']:
         for result in run['results']:
             case=find(s['cases'],result['case_id'])
@@ -280,8 +294,9 @@ def task(c,i):
     if not t:raise LookupError('任务不存在')
     return t
 
-def create_task(pid,revision,request_id,kind,document_ids,requirement_ids,consent):
-    if kind not in ('extract','generate','index','impact'):raise ValueError('任务类型无效')
+def create_task(pid,revision,request_id,kind,document_ids,requirement_ids,consent,case_ids=None):
+    case_ids=case_ids or []
+    if kind not in ('extract','generate','index','review'):raise ValueError('任务类型无效')
     if not consent:raise ValueError('请确认本轮允许处理的资料范围')
     from opslens.diagnostic import model
     with db.connect() as c:
@@ -289,14 +304,22 @@ def create_task(pid,revision,request_id,kind,document_ids,requirement_ids,consen
         previous=c.execute('SELECT * FROM cf_tasks WHERE request_id=%s',(request_id,)).fetchone()
         if previous:
             expected={'revision':revision,'document_ids':document_ids,'requirement_ids':requirement_ids}
-            if str(previous['project_id'])!=str(pid) or previous['kind']!=kind or any(previous['input'].get(k)!=v for k,v in expected.items()):raise FileExistsError('请求编号已经用于其他任务')
+            expected['case_ids']=case_ids
+            if str(previous['project_id'])!=str(pid) or previous['kind']!=kind or any(previous['input'].get(k,[] if k=='case_ids' else None)!=v for k,v in expected.items()):raise FileExistsError('请求编号已经用于其他任务')
             return previous
         if p['revision']!=revision:raise FileExistsError('资料已变化，请重新确认')
         for i in document_ids:find(p['state']['documents'],i)
+        if kind=='review':
+            if not 1<=len(case_ids)<=3:raise ValueError('一次检查1至3条已保存用例')
+            if len(set(case_ids))!=len(case_ids):raise ValueError('同一批检查不能重复选择用例')
+            selected=[find(p['state']['cases'],cid) for cid in case_ids]
+            if any(row.get('applied_to') for row in selected):raise ValueError('请检查原用例，已应用建议只保留历史')
+            if set(requirement_ids)!={rid for row in selected for rid in row['requirement_ids']}:raise ValueError('请完整选择被检查用例的关联需求')
+        elif case_ids:raise ValueError('只有依据检查任务可指定已有用例')
         for i in requirement_ids:
             if find(p['state']['requirements'],i)['status']!='confirmed':raise ValueError('请先确认所选需求')
         if not document_ids:raise ValueError('请选择本轮允许处理的资料')
-        if kind=='generate':
+        if kind in ('generate','review'):
             for rid in requirement_ids:
                 r=find(p['state']['requirements'],rid)
                 if not {q['document_id'] for q in r['citations']}<=set(document_ids):raise ValueError('请选择关联需求的全部依据资料，或调整本轮需求范围')
@@ -304,6 +327,7 @@ def create_task(pid,revision,request_id,kind,document_ids,requirement_ids,consen
         if kind=='generate' and not requirement_ids:raise ValueError('请选择至少一条已确认需求')
         from .agent import PROMPT_VERSION,processing_signature
         payload={'revision':revision,'document_ids':document_ids,'requirement_ids':requirement_ids,'config_id':str(cfg['id']),'scope_digest':digest([p['state'],document_ids,requirement_ids]),'consent':True,'prompt_version':PROMPT_VERSION,'processing_signature':processing_signature()}
+        if case_ids:payload['case_ids']=case_ids
         old=c.execute('SELECT * FROM cf_tasks WHERE request_id=%s',(request_id,)).fetchone()
         if old:
             if str(old['project_id'])!=str(pid) or old['kind']!=kind or old['input']!=payload:raise FileExistsError('请求编号已经用于其他任务')

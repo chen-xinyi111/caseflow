@@ -37,10 +37,12 @@ class CaseEdit(Revision):
     expected:str|None=Field(default=None,max_length=2000)
     status:Literal['draft','approved','rejected','needs_review']|None=None
     review_note:str=Field(default='',max_length=2000)
+    acknowledge_grounding:bool=False
 class Batch(Revision):
     ids:list[UUID]=Field(min_length=1,max_length=100)
     status:Literal['approved','rejected']
     review_note:str=Field(min_length=1,max_length=2000)
+    acknowledge_grounding:bool=False
 class Change(Revision):
     action:Literal['add','replace','remove','reject']
     target_ids:list[UUID]=Field(default_factory=list,max_length=10)
@@ -51,10 +53,22 @@ class ClarificationInput(Revision):
 class ClarificationAnswer(Revision):answer:str=Field(min_length=1,max_length=3000)
 class TaskInput(Revision):
     request_id:UUID
-    kind:Literal['extract','generate','index']
+    kind:Literal['extract','generate','index','review']
     document_ids:list[UUID]=Field(min_length=1,max_length=100)
     requirement_ids:list[UUID]=Field(default_factory=list,max_length=20)
     consent:bool
+    case_ids:list[UUID]=Field(default_factory=list,max_length=3)
+class NumericRule(Revision):
+    name:str=Field(min_length=1,max_length=80)
+    metric:str=Field(min_length=1,max_length=50)
+    unit:str=Field(default='',max_length=10)
+    kind:Literal['range','discount']
+    minimum:str=Field(default='',max_length=30)
+    maximum:str=Field(default='',max_length=30)
+    threshold:str=Field(default='',max_length=30)
+    discount:str=Field(default='',max_length=30)
+    requirement_ids:list[UUID]=Field(min_length=1,max_length=20)
+    confirmed:bool=False
 class Strategy(Revision):mode:Literal['keyword','vector','hybrid','rerank']
 class RunItem(Strict):
     case_id:str;revision:int=Field(ge=1)
@@ -111,7 +125,7 @@ def clarify_answer(pid:UUID,cid:UUID,data:ClarificationAnswer):
 @router.post('/projects/{pid}/reviews')
 def review(pid:UUID,data:Batch):
     def apply(s):
-        for cid in data.ids:store.edit_case(s,str(cid),{'status':data.status,'review_note':data.review_note})
+        for cid in data.ids:store.edit_case(s,str(cid),{'status':data.status,'review_note':data.review_note,'acknowledge_grounding':data.acknowledge_grounding})
         return {'count':len(data.ids),'status':data.status}
     return checked(lambda:store.public(store.update(pid,data.revision,'batch_review',apply)))
 @router.post('/projects/{pid}/proposals/{cid}')
@@ -124,7 +138,16 @@ def change(pid:UUID,cid:UUID,data:Change):
 def strategy(pid:UUID,data:Strategy):
     return checked(lambda:store.public(store.update(pid,data.revision,'strategy',lambda s:s.update(retrieval_mode=data.mode))))
 @router.post('/projects/{pid}/tasks',status_code=202)
-def submit(pid:UUID,data:TaskInput):return checked(store.create_task,pid,data.revision,data.request_id,data.kind,[str(i) for i in data.document_ids],[str(i) for i in data.requirement_ids],data.consent)
+def submit(pid:UUID,data:TaskInput):return checked(store.create_task,pid,data.revision,data.request_id,data.kind,[str(i) for i in data.document_ids],[str(i) for i in data.requirement_ids],data.consent,[str(i) for i in data.case_ids])
+@router.post('/projects/{pid}/numeric-rules')
+def numeric_rule(pid:UUID,data:NumericRule):
+    from . import grounding
+    values=data.model_dump(exclude={'revision'});values['requirement_ids']=[str(i) for i in data.requirement_ids]
+    return checked(lambda:store.public(store.update(pid,data.revision,'numeric_rule',lambda s:grounding.add_rule(s,values))))
+@router.post('/projects/{pid}/numeric-rules/{rid}/disable')
+def disable_numeric_rule(pid:UUID,rid:UUID,data:Revision):
+    from . import grounding
+    return checked(lambda:store.public(store.update(pid,data.revision,'numeric_rule_disabled',lambda s:grounding.disable_rule(s,str(rid)))))
 @router.get('/projects/{pid}/tasks')
 def tasks(pid:UUID):
     with db.connect() as c:
@@ -183,7 +206,13 @@ def export(pid:UUID,format:Literal['xlsx','md']='xlsx'):
             refs='\n'.join(store.find(s['requirements'],r)['code'] for r in case['requirement_ids'])
             citations='\n'.join(store.find(s['documents'],q['document_id'])['name']+' 第'+str(q['page'])+'页：'+q['quote'] for q in case.get('citations',[]))
             rows.append([case['code'],case['revision'],'已应用建议' if case.get('applied_to') else labels[case['status']],refs,case['title'],case['preconditions'],case.get('data',''),'\n'.join(f'{i+1}. {step}' for i,step in enumerate(case['steps'])),case['expected'],'明确依据' if case['basis']=='explicit' else '补充建议',citations,case.get('review_note','')])
-        headers=['用例编号','用例修订','审核状态','关联需求','标题','前置条件','输入数据','操作步骤','预期结果','依据类型','原文依据','审核说明']
+        from . import grounding
+        for row,case in zip(rows,s['cases']):
+            report=case.get('grounding');current=grounding.report_current(s,case)
+            label='尚未复核' if not report else '检查已失效' if not current else '自动复核未发现疑点' if report['status']=='checked' else '需人工核对'
+            details='\n'.join(grounding.LABELS[f['field']]+'：'+f['reason'] for f in (report or {}).get('fields',[]))
+            row.extend([label,details,'按已确认数值规则计算' if case.get('calculation') else ''])
+        headers=['用例编号','用例修订','审核状态','关联需求','标题','前置条件','输入数据','操作步骤','预期结果','依据类型','原文依据','审核说明','依据检查','检查说明','数值计算']
         export_id=store.uid();s['exports'].append({'id':export_id,'at':store.now(),'format':format,'project_revision':p['revision'],'rows':copy.deepcopy(rows)})
         c.execute('UPDATE cf_projects SET state=%s WHERE id=%s',(store.jsonb(s),pid))
         c.execute('INSERT INTO cf_audit(project_id,action,payload) VALUES (%s,%s,%s)',(pid,'export',store.jsonb({'id':export_id,'count':len(rows),'format':format})))
