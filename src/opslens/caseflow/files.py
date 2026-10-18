@@ -37,6 +37,16 @@ def parse(name,raw):
             return [text]
     except (KeyError,ET.ParseError):raise ValueError('无法读取Word正文') from None
 
+def inspect(name,raw):
+    pages=parse(name,raw)
+    warnings=[f'第{i+1}页没有可提取正文，请核对是否为空白页或扫描图片；该页不会生成需求。' for i,page in enumerate(pages) if not page.strip()]
+    if Path(name).suffix.lower()=='.docx':
+        with office(raw) as z:
+            root=xml(z,'word/document.xml')
+            if any(root.find('.//{'+W+'}'+tag) is not None for tag in ('drawing','pict','object')):
+                warnings.append('Word包含图片或嵌入对象，其中的文字未提取，请核对并补充文字资料。')
+    return pages,warnings
+
 def col(n):
     value=''
     while n:n,r=divmod(n-1,26);value=chr(65+r)+value

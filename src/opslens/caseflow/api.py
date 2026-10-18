@@ -39,6 +39,11 @@ class Batch(Revision):
 class Change(Revision):
     action:Literal['add','replace','remove','reject']
     target_ids:list[UUID]=Field(default_factory=list,max_length=10)
+class ClarificationInput(Revision):
+    question:str=Field(min_length=1,max_length=1000)
+    requirement_ids:list[UUID]=Field(min_length=1,max_length=20)
+    kind:Literal['ambiguity','conflict']='ambiguity'
+class ClarificationAnswer(Revision):answer:str=Field(min_length=1,max_length=3000)
 class TaskInput(Revision):
     request_id:UUID
     kind:Literal['extract','generate','index']
@@ -80,8 +85,8 @@ def text(pid:UUID,data:Text):
 @router.post('/projects/{pid}/files')
 async def upload(pid:UUID,file:UploadFile=File(...),revision:int=Form(...),role:Literal['requirement','context']=Form('requirement'),previous_id:UUID|None=Form(None)):
     raw=await file.read(5*1024*1024+1);name=(file.filename or '资料.txt').replace('\\','/').split('/')[-1]
-    pages=checked(files.parse,name,raw)
-    return checked(lambda:store.public(store.update(pid,revision,'document',lambda s:store.add_document(s,name,pages,role,str(previous_id) if previous_id else None))))
+    pages,warnings=checked(files.inspect,name,raw)
+    return checked(lambda:store.public(store.update(pid,revision,'document',lambda s:store.add_document(s,name,pages,role,str(previous_id) if previous_id else None,warnings))))
 @router.post('/projects/{pid}/requirements/{rid}')
 def requirement(pid:UUID,rid:UUID,data:RequirementEdit):
     return checked(lambda:store.public(store.update(pid,data.revision,'requirement_review',lambda s:store.edit_requirement(s,str(rid),data.text,data.status,data.answer))))
@@ -89,6 +94,12 @@ def requirement(pid:UUID,rid:UUID,data:RequirementEdit):
 def case(pid:UUID,cid:UUID,data:CaseEdit):
     values={k:store.clean(v) if isinstance(v,str) else [store.clean(x) for x in v] if isinstance(v,list) else v for k,v in data.model_dump(exclude_none=True).items() if k!='revision'}
     return checked(lambda:store.public(store.update(pid,data.revision,'case_review',lambda s:store.edit_case(s,str(cid),copy.deepcopy(values)))))
+@router.post('/projects/{pid}/clarifications')
+def clarify(pid:UUID,data:ClarificationInput):
+    return checked(lambda:store.public(store.update(pid,data.revision,'clarification',lambda s:store.add_clarification(s,data.question,[str(i) for i in data.requirement_ids],data.kind))))
+@router.post('/projects/{pid}/clarifications/{cid}')
+def clarify_answer(pid:UUID,cid:UUID,data:ClarificationAnswer):
+    return checked(lambda:store.public(store.update(pid,data.revision,'clarification_answer',lambda s:store.resolve_clarification(s,str(cid),data.answer))))
 @router.post('/projects/{pid}/reviews')
 def review(pid:UUID,data:Batch):
     def apply(s):
@@ -118,8 +129,9 @@ def task(tid:UUID):
 def resume(tid:UUID,data:Revision):
     with db.connect() as c:
         t=checked(store.task,c,tid);p=checked(store.get,c,t['project_id'],True)
+        from .agent import processing_signature
         if t['status'] not in ('failed','blocked'):raise HTTPException(409,'任务当前不能继续')
-        if p['revision']!=data.revision or p['revision']!=t['input']['revision'] or str(model.config(c)['id'])!=t['input']['config_id']:raise HTTPException(409,'资料或配置已变化，保存结果仅供查看，请重新确认处理范围')
+        if p['revision']!=data.revision or p['revision']!=t['input']['revision'] or str(model.config(c)['id'])!=t['input']['config_id'] or t['input'].get('processing_signature')!=processing_signature():raise HTTPException(409,'资料、模型或索引规则已变化，保存结果仅供查看，请重新确认处理范围')
         unknown=c.execute("SELECT 1 FROM durable_operations WHERE family='caseflow' AND task_id=%s AND status='issued' AND paid",(tid,)).fetchone()
         if unknown:raise HTTPException(409,'存在结果未知的外部调用，不能自动重发；已保存步骤可查看')
         if c.execute("SELECT 1 FROM cf_tasks WHERE project_id=%s AND status IN ('queued','running')",(p['id'],)).fetchone():raise HTTPException(409,'项目已有处理任务')
@@ -162,7 +174,7 @@ def export(pid:UUID,format:Literal['xlsx','md']='xlsx'):
         for case in s['cases']:
             refs='\n'.join(store.find(s['requirements'],r)['code'] for r in case['requirement_ids'])
             citations='\n'.join(store.find(s['documents'],q['document_id'])['name']+' 第'+str(q['page'])+'页：'+q['quote'] for q in case.get('citations',[]))
-            rows.append([case['code'],case['revision'],labels[case['status']],refs,case['title'],case['preconditions'],case.get('data',''),'\n'.join(f'{i+1}. {step}' for i,step in enumerate(case['steps'])),case['expected'],'明确依据' if case['basis']=='explicit' else '补充建议',citations,case.get('review_note','')])
+            rows.append([case['code'],case['revision'],'已应用建议' if case.get('applied_to') else labels[case['status']],refs,case['title'],case['preconditions'],case.get('data',''),'\n'.join(f'{i+1}. {step}' for i,step in enumerate(case['steps'])),case['expected'],'明确依据' if case['basis']=='explicit' else '补充建议',citations,case.get('review_note','')])
         headers=['用例编号','用例修订','审核状态','关联需求','标题','前置条件','输入数据','操作步骤','预期结果','依据类型','原文依据','审核说明']
         export_id=store.uid();s['exports'].append({'id':export_id,'at':store.now(),'format':format,'project_revision':p['revision'],'rows':copy.deepcopy(rows)})
         c.execute('UPDATE cf_projects SET state=%s WHERE id=%s',(store.jsonb(s),pid))

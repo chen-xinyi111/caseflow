@@ -367,6 +367,118 @@
         }
       }
     },
+    "/api/v1/caseflow/projects/{pid}/clarifications": {
+      "post": {
+        "tags": [
+          "CaseFlow"
+        ],
+        "summary": "Clarify",
+        "operationId": "clarify_api_v1_caseflow_projects__pid__clarifications_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClarificationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/clarifications/{cid}": {
+      "post": {
+        "tags": [
+          "CaseFlow"
+        ],
+        "summary": "Clarify Answer",
+        "operationId": "clarify_answer_api_v1_caseflow_projects__pid__clarifications__cid__post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "cid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClarificationAnswer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/caseflow/projects/{pid}/reviews": {
       "post": {
         "tags": [
@@ -4626,6 +4738,70 @@
           "page_text"
         ],
         "title": "Citation"
+      },
+      "ClarificationAnswer": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "answer": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Answer"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision",
+          "answer"
+        ],
+        "title": "ClarificationAnswer"
+      },
+      "ClarificationInput": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "question": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Question"
+          },
+          "requirement_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Requirement Ids"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ambiguity",
+              "conflict"
+            ],
+            "title": "Kind",
+            "default": "ambiguity"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision",
+          "question",
+          "requirement_ids"
+        ],
+        "title": "ClarificationInput"
       },
       "Collaboration": {
         "properties": {

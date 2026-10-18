@@ -124,6 +124,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/caseflow/projects/{pid}/clarifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Clarify */
+        post: operations["clarify_api_v1_caseflow_projects__pid__clarifications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/clarifications/{cid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Clarify Answer */
+        post: operations["clarify_answer_api_v1_caseflow_projects__pid__clarifications__cid__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/caseflow/projects/{pid}/reviews": {
         parameters: {
             query?: never;
@@ -1618,6 +1652,28 @@ export interface components {
             document: components["schemas"]["Document"];
             /** Page Text */
             page_text: string;
+        };
+        /** ClarificationAnswer */
+        ClarificationAnswer: {
+            /** Revision */
+            revision: number;
+            /** Answer */
+            answer: string;
+        };
+        /** ClarificationInput */
+        ClarificationInput: {
+            /** Revision */
+            revision: number;
+            /** Question */
+            question: string;
+            /** Requirement Ids */
+            requirement_ids: string[];
+            /**
+             * Kind
+             * @default ambiguity
+             * @enum {string}
+             */
+            kind: "ambiguity" | "conflict";
         };
         /** Collaboration */
         Collaboration: {
@@ -3540,6 +3596,77 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CaseEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clarify_api_v1_caseflow_projects__pid__clarifications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClarificationInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clarify_answer_api_v1_caseflow_projects__pid__clarifications__cid__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                cid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClarificationAnswer"];
             };
         };
         responses: {

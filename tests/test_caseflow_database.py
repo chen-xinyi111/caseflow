@@ -1,5 +1,7 @@
 """Isolated schema integration; controlled model responses never count as live model evidence."""
 import json
+import io
+import zipfile
 from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
@@ -64,11 +66,17 @@ def test_full_agent_rag_review_export_execution(client,monkeypatch):
     agent.process(durability.claim('caseflow'))
     task=client.get('/api/v1/caseflow/tasks/'+t.json()['id']).json();assert task['status']=='completed',task
     p=client.get(url).json();case=p['state']['cases'][0]
-    p=client.post(url+'/cases/'+case['id'],json={'revision':p['revision'],'status':'approved','review_note':'控制检查，核对了原文和步骤'}).json()
+    p=client.post(url+'/cases/'+case['id'],json={'revision':p['revision'],'expected':'人工确认：其他条件满足时允许30分钟预约','status':'approved','review_note':'控制检查，核对了原文和步骤'}).json()
     assert p['state']['summary']['approved']==1
+    case=p['state']['cases'][0]
     export=client.get(url+'/export?format=xlsx');assert export.status_code==200 and export.content[:2]==b'PK'
-    md=client.get(url+'/export?format=md');assert 'T001' in md.text and '已审核' in md.text
-    p=client.post(url+'/runs',json={'revision':p['revision'],'request_id':str(uuid4()),'name':'隔离检查','results':[{'case_id':case['id'],'revision':1,'status':'通过','note':'仅工程检查记录'}]}).json()
+    md=client.get(url+'/export?format=md');assert 'T001' in md.text and '已审核' in md.text and case['expected'] in md.text
+    import xml.etree.ElementTree as ET
+    with zipfile.ZipFile(io.BytesIO(export.content)) as z:
+        ns={'x':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+        rows=[[ ''.join(cell.itertext()) for cell in row] for row in ET.fromstring(z.read('xl/worksheets/sheet1.xml')).findall('.//x:row',ns)]
+    assert rows[1][8]==case['expected'] and rows[1][11]==case['review_note']
+    p=client.post(url+'/runs',json={'revision':p['revision'],'request_id':str(uuid4()),'name':'隔离检查','results':[{'case_id':case['id'],'revision':case['revision'],'status':'通过','note':'仅工程检查记录'}]}).json()
     assert p['state']['runs'][0]['results'][0]['current']
     p=client.post(url+'/requirements/'+r['id'],json={'revision':p['revision'],'text':'预约时长为30至180分钟。','status':'confirmed'}).json()
     assert p['state']['cases'][0]['status']=='needs_review' and not p['state']['runs'][0]['results'][0]['current']
@@ -136,3 +144,132 @@ def test_budget_reservation_preserves_first_result_and_blocks_next_call(client):
     with pytest.raises(ModelBlocked):provider.call('two',lambda:pytest.fail('budget bypassed'))
     with db.connect() as c:assert c.execute('SELECT count(*) n FROM cf_requests').fetchone()['n']==1
     assert sent==[1]
+
+def text_pdf(text='Meeting duration is 30 to 120 minutes.'):
+    stream=('BT /F1 12 Tf 40 750 Td ('+text+') Tj ET').encode()
+    objects=[b'<< /Type /Catalog /Pages 2 0 R >>',b'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',b'<< /Length '+str(len(stream)).encode()+b' >>\nstream\n'+stream+b'\nendstream']
+    out=b'%PDF-1.4\n';offsets=[0]
+    for i,obj in enumerate(objects,1):offsets.append(len(out));out+=str(i).encode()+b' 0 obj\n'+obj+b'\nendobj\n'
+    start=len(out);out+=b'xref\n0 6\n0000000000 65535 f \n'+b''.join(f'{n:010d} 00000 n \n'.encode() for n in offsets[1:])
+    return out+b'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+str(start).encode()+b'\n%%EOF\n'
+
+def test_requirement_upload_formats_and_explicit_parse_failure(client):
+    p=client.post('/api/v1/caseflow/projects',json={'name':'文件导入验收'}).json();url='/api/v1/caseflow/projects/'+p['id']
+    word=io.BytesIO()
+    with zipfile.ZipFile(word,'w') as z:z.writestr('word/document.xml','<w:document xmlns:w="'+'http://schemas.openxmlformats.org/wordprocessingml/2006/main'+'"><w:body><w:p><w:r><w:t>预约时长为30至120分钟。</w:t></w:r></w:p></w:body></w:document>')
+    for name,raw,expected in [('需求.md','预约时长为30至120分钟。'.encode(),'预约时长'),('需求.txt','预约时长为30至120分钟。'.encode(),'预约时长'),('需求.docx',word.getvalue(),'预约时长'),('需求.pdf',text_pdf(),'Meeting duration')]:
+        response=client.post(url+'/files',data={'revision':p['revision']},files={'file':(name,raw,'application/octet-stream')});assert response.status_code==200,response.text
+        p=response.json();assert expected in p['state']['documents'][-1]['pages'][0]
+    response=client.post(url+'/files',data={'revision':p['revision']},files={'file':('扫描.pdf',text_pdf(''),'application/pdf')})
+    assert response.status_code==400 and '没有可提取正文' in response.json()['detail']
+    assert client.get(url).json()['revision']==p['revision']
+
+def test_conflict_entry_checks_project_scope_and_preserves_review_gate(client,monkeypatch):
+    monkeypatch.setattr(agent,'Provider',ControlledProvider);p=project(client);url='/api/v1/caseflow/projects/'+p['id']
+    t=client.post(url+'/tasks',json=task_body(p,'extract'));agent.process(durability.claim('caseflow'))
+    p=client.get(url).json();r=p['state']['requirements'][0]
+    foreign=project(client)
+    response=client.post(url+'/clarifications',json={'revision':p['revision'],'kind':'conflict','question':'两份资料谁优先？','requirement_ids':[r['id'],foreign['id']]})
+    assert response.status_code==404 and client.get(url).json()['revision']==p['revision']
+    p=client.post(url+'/clarifications',json={'revision':p['revision'],'kind':'ambiguity','question':'是否按整数分钟计？','requirement_ids':[r['id']]}).json()
+    assert client.post(url+'/requirements/'+r['id'],json={'revision':p['revision'],'text':r['text'],'status':'confirmed'}).status_code==400
+    q=p['state']['clarifications'][0]
+    p=client.post(url+'/clarifications/'+q['id'],json={'revision':p['revision'],'answer':'按整数分钟计；范围仍为30至120分钟。'}).json()
+    assert p['state']['requirements'][0]['status']=='draft'
+    p=client.post(url+'/requirements/'+r['id'],json={'revision':p['revision'],'text':r['text'],'status':'confirmed'}).json()
+    assert p['state']['requirements'][0]['status']=='confirmed'
+
+
+
+def test_resume_validates_processing_signature_and_never_resends_unknown(client,monkeypatch):
+    p=project(client);t=client.post('/api/v1/caseflow/projects/'+p['id']+'/tasks',json=task_body(p,'extract')).json()
+    claimed=durability.claim('caseflow');rt=durability.Runtime('caseflow',claimed)
+    rt.operation('saved',lambda:{'content':'kept'},paid=True);rt.finish('blocked',error='可继续的本地停止')
+    resume='/api/v1/caseflow/tasks/'+t['id']+'/resume'
+    original=agent.processing_signature
+    monkeypatch.setattr(agent,'processing_signature',lambda:'changed-index-rules')
+    assert client.post(resume,json={'revision':p['revision']}).status_code==409
+    monkeypatch.setattr(agent,'processing_signature',original)
+    assert client.post(resume,json={'revision':p['revision']}).status_code==200
+    takeover=durability.claim('caseflow');new=durability.Runtime('caseflow',takeover)
+    assert new.operation('saved',lambda:pytest.fail('completed external result repeated'),paid=True)['content']=='kept'
+    with pytest.raises(RuntimeError):new.operation('unknown',lambda:(_ for _ in ()).throw(RuntimeError('connection lost')),paid=True)
+    new.finish('failed',error='外部响应未知')
+    response=client.post(resume,json={'revision':p['revision']});assert response.status_code==409 and '未知' in response.json()['detail']
+
+
+def test_budget_stop_keeps_partial_steps_and_explicit_resume_reuses_them(client,monkeypatch):
+    from opslens.rag.provider import ModelBlocked
+    sent=[];stop=[True]
+    class BudgetProvider(ControlledProvider):
+        def generate(self,messages,tools,key):
+            if key.endswith(':1') and stop[0]:raise ModelBlocked('模拟额度不足：尚未发送下一段')
+            if key not in sent:sent.append(key)
+            return super().generate(messages,tools,key)
+    monkeypatch.setattr(agent,'Provider',BudgetProvider)
+    p=project(client);url='/api/v1/caseflow/projects/'+p['id']
+    with db.connect() as c:
+        current=store.get(c,p['id'],True);current['state']['documents'][0]['pages']=['第一段预约规则。'+('背景。'*900)]
+        c.execute('UPDATE cf_projects SET state=%s WHERE id=%s',(store.jsonb(current['state']),p['id']))
+    t=client.post(url+'/tasks',json=task_body(p,'extract')).json();agent.process(durability.claim('caseflow'))
+    status=client.get('/api/v1/caseflow/tasks/'+t['id']).json()
+    assert status['status']=='blocked' and status['result']['completed_segments']==1
+    assert client.get(url).json()['state']['requirements']==[]
+    with db.connect() as c:
+        completed=c.execute("SELECT count(*) n FROM durable_operations WHERE task_id=%s AND status='completed' AND paid",(t['id'],)).fetchone()['n']
+        assert completed==1
+        events=c.execute("SELECT payload FROM cf_events WHERE task_id=%s AND kind='progress'",(t['id'],)).fetchall()
+        assert any(e['payload'].get('completed')==1 and e['payload'].get('total',0)>1 for e in events)
+    stop[0]=False
+    assert client.post('/api/v1/caseflow/tasks/'+t['id']+'/resume',json={'revision':p['revision']}).status_code==200
+    agent.process(durability.claim('caseflow'))
+    assert client.get('/api/v1/caseflow/tasks/'+t['id']).json()['status']=='completed'
+    with db.connect() as c:assert c.execute("SELECT count(*) n FROM durable_operations WHERE task_id=%s AND operation_key=%s",(t['id'],sent[0])).fetchone()['n']==1
+    assert len(client.get(url).json()['state']['requirements'])>0
+
+
+def test_sse_reconnect_replays_only_later_saved_events(client,monkeypatch):
+    monkeypatch.setattr(agent,'Provider',ControlledProvider);p=project(client)
+    t=client.post('/api/v1/caseflow/projects/'+p['id']+'/tasks',json=task_body(p,'extract')).json();agent.process(durability.claim('caseflow'))
+    with db.connect() as c:rows=c.execute('SELECT id FROM cf_events WHERE task_id=%s ORDER BY id',(t['id'],)).fetchall()
+    cursor=rows[1]['id'];response=client.get('/api/v1/caseflow/tasks/'+t['id']+'/events?after=0',headers={'Last-Event-ID':str(cursor)})
+    ids=[int(line[4:]) for line in response.text.splitlines() if line.startswith('id: ')]
+    assert ids==[r['id'] for r in rows if r['id']>cursor]
+
+
+def test_configuration_changed_during_final_call_blocks_result_commit(client,monkeypatch):
+    from opslens.diagnostic import model
+    from opslens.diagnostic.contracts import ModelSettings
+    class ChangingProvider(ControlledProvider):
+        def generate(self,messages,tools,key):
+            result=super().generate(messages,tools,key)
+            model.save_settings(ModelSettings(daily_limit=27))
+            return result
+    monkeypatch.setattr(agent,'Provider',ChangingProvider);p=project(client);url='/api/v1/caseflow/projects/'+p['id']
+    t=client.post(url+'/tasks',json=task_body(p,'extract')).json();agent.process(durability.claim('caseflow'))
+    result=client.get('/api/v1/caseflow/tasks/'+t['id']).json()
+    assert result['status']=='blocked' and '模型或索引' in result['error']
+    assert client.get(url).json()['state']['requirements']==[]
+    assert client.post('/api/v1/caseflow/tasks/'+t['id']+'/resume',json={'revision':p['revision']}).status_code==409
+
+
+def test_execution_import_binds_revision_and_preserves_all_or_nothing(client,monkeypatch):
+    from opslens.caseflow import files
+    monkeypatch.setattr(agent,'Provider',ControlledProvider);p=project(client);url='/api/v1/caseflow/projects/'+p['id']
+    client.post(url+'/tasks',json=task_body(p,'extract'));agent.process(durability.claim('caseflow'));p=client.get(url).json();r=p['state']['requirements'][0]
+    p=client.post(url+'/requirements/'+r['id'],json={'revision':p['revision'],'text':r['text'],'status':'confirmed'}).json()
+    client.post(url+'/tasks',json=task_body(p,'generate'));agent.process(durability.claim('caseflow'));p=client.get(url).json();case=p['state']['cases'][0]
+    p=client.post(url+'/cases/'+case['id'],json={'revision':p['revision'],'status':'approved','review_note':'导入链路检查'}).json()
+    raw=files.xlsx(files.RESULT_HEADERS,[[case['code'],1,'未执行','旧规则批次']])
+    template=client.get(url+'/result-template');assert template.status_code==200 and template.content.startswith(b'PK')
+    p=client.post(url+'/runs/import',data={'revision':p['revision'],'name':'旧批次','request_id':str(uuid4())},files={'file':('results.xlsx',raw)}).json()
+    assert p['state']['runs'][-1]['results'][0]['current']
+    p=client.post(url+'/requirements/'+r['id'],json={'revision':p['revision'],'text':'预约时长为30至180分钟。','status':'confirmed'}).json()
+    p=client.post(url+'/cases/'+case['id'],json={'revision':p['revision'],'status':'approved','review_note':'重新核对新规则'}).json()
+    assert p['state']['cases'][0]['revision']==2
+    late=','.join(files.RESULT_HEADERS)+'\nT001,1,未执行,补录旧规则'
+    response=client.post(url+'/runs/import',data={'revision':p['revision'],'name':'旧批次补录','request_id':str(uuid4())},files={'file':('late.csv',late.encode())})
+    assert response.status_code==200;p=response.json();assert not p['state']['runs'][-1]['results'][0]['current']
+    invalid=files.xlsx(files.RESULT_HEADERS,[['T001',2,'未执行',''],['T999',1,'通过','错误编号']])
+    response=client.post(url+'/runs/import',data={'revision':p['revision'],'name':'拒绝整批','request_id':str(uuid4())},files={'file':('invalid.xlsx',invalid)})
+    assert response.status_code==400 and client.get(url).json()['revision']==p['revision']

@@ -100,3 +100,92 @@ def test_duplicate_document_and_requirement_status_invalidation(state):
     store.edit_case(state,c['id'],{'status':'approved','review_note':'已审核'})
     store.edit_requirement(state,r['id'],r['text'],'draft')
     assert c['status']=='needs_review'
+
+def test_manual_conflict_requires_resolution_and_fresh_confirmation(state):
+    r=state['requirements'][0];did=r['document_id'];store.add_cases(state,[case(state)],[r['id']],[did]);c=state['cases'][0]
+    store.edit_case(state,c['id'],{'status':'approved','review_note':'已核对原规则'})
+    store.add_document(state,'另一份说明',['预约时长为60至90分钟。']);other=state['documents'][-1]
+    b=store.new_requirement(state,{'text':other['pages'][0],'citations':[{'document_id':other['id'],'page':1,'quote':other['pages'][0]}]},other['id'])
+    result=store.add_clarification(state,'两份资料的时长范围应以哪份为准？',[r['id'],b['id']],'conflict')
+    assert c['status']=='needs_review' and r['status']=='draft'
+    assert r['text']=='预约时长为30至120分钟。' and b['text']=='预约时长为60至90分钟。'
+    assert store.add_clarification(state,'两份资料的时长范围应以哪份为准？',[b['id'],r['id']],'conflict')['reused']
+    with pytest.raises(ValueError):store.edit_requirement(state,r['id'],r['text'],'confirmed')
+    store.resolve_clarification(state,result['clarification_id'],'采用第一份时长范围；另一条需求排除，等待负责人核对。')
+    assert r['status']=='draft' and r['origin']=='user' and r['answers'][-1]['clarification_id']==result['clarification_id']
+    store.edit_requirement(state,b['id'],b['text'],'excluded');store.edit_requirement(state,r['id'],r['text'],'confirmed')
+    assert not store.unresolved(state,[r['id']]) and c['status']=='needs_review'
+
+def test_foreign_clarification_and_empty_text_do_not_mutate_assets(state):
+    original=copy.deepcopy(state)
+    with pytest.raises(LookupError):store.add_clarification(state,'待确认',[state['requirements'][0]['id'],'foreign'])
+    assert state==original
+    with pytest.raises(ValueError):store.add_document(state,'空白资料',[' \n '])
+    assert state==original
+
+def test_docx_images_are_explicitly_flagged():
+    stream=io.BytesIO()
+    with zipfile.ZipFile(stream,'w') as z:z.writestr('word/document.xml','<w:document xmlns:w="'+files.W+'"><w:body><w:p><w:r><w:t>可提取规则</w:t><w:drawing/></w:r></w:p></w:body></w:document>')
+    pages,warnings=files.inspect('mixed.docx',stream.getvalue())
+    assert pages==['可提取规则'] and len(warnings)==1 and '图片' in warnings[0]
+
+
+def test_reapproval_with_new_requirements_creates_revision_without_text_change(state):
+    r=state['requirements'][0];store.add_cases(state,[case(state)],[r['id']],[r['document_id']]);c=state['cases'][0]
+    store.edit_case(state,c['id'],{'status':'approved','review_note':'核对原规则'})
+    store.record_run(state,'原规则执行',[{'case_id':c['id'],'revision':1,'status':'通过','note':'原规则结果'}],'old-run')
+    store.edit_requirement(state,r['id'],'预约时长为30至180分钟。','confirmed')
+    store.edit_case(state,c['id'],{'status':'approved','review_note':'30分钟仍适用，重新核对新规则'})
+    assert c['revision']==2 and c['requirement_revisions']=={r['id']:2}
+    assert not store.public({'state':state})['state']['runs'][0]['results'][0]['current']
+    store.record_run(state,'补录原结果',[{'case_id':c['code'],'revision':1,'status':'通过','note':'旧修订补录'}],'late-run')
+    assert state['runs'][-1]['results'][0]['requirement_revisions']=={r['id']:1}
+    store.record_run(state,'新规则执行',[{'case_id':c['code'],'revision':2,'status':'未执行','note':''}],'new-run')
+    assert store.public({'state':state})['state']['runs'][-1]['results'][0]['current']
+
+
+def test_proposal_cannot_overwrite_later_manual_edits_or_missing_baseline(state):
+    r=state['requirements'][0];store.add_cases(state,[case(state)],[r['id']],[r['document_id']]);c=state['cases'][0]
+    store.edit_requirement(state,r['id'],'预约时长为30至180分钟。','confirmed')
+    store.add_cases(state,[case(state,'检查180分钟')|{'replaces_case_id':c['id'],'replaces_case_revision':999}],[r['id']],[r['document_id']])
+    proposal=state['cases'][-1];assert proposal['replaces_case_revision']==1
+    store.edit_case(state,c['id'],{'expected':'人工补充，不得覆盖','status':'needs_review'})
+    before=copy.deepcopy(state)
+    with pytest.raises(FileExistsError):store.accept_proposal(state,proposal['id'])
+    assert state==before and c['expected']=='人工补充，不得覆盖'
+    proposal.pop('replaces_case_revision')
+    with pytest.raises(FileExistsError):store.accept_proposal(state,proposal['id'])
+
+
+def test_execution_alias_duplicates_are_rejected_atomically(state):
+    r=state['requirements'][0];store.add_cases(state,[case(state)],[r['id']],[r['document_id']]);c=state['cases'][0]
+    store.edit_case(state,c['id'],{'status':'approved','review_note':'核对'})
+    rows=[{'case_id':value,'revision':1,'status':'通过','note':''} for value in (c['id'],c['code'])]
+    with pytest.raises(ValueError):store.record_run(state,'重复编号',rows,'dup')
+    assert not state['runs']
+
+
+def test_change_add_remove_split_merge_and_stale_decision(state):
+    r=state['requirements'][0];did=r['document_id'];store.add_cases(state,[case(state)],[r['id']],[did]);c=state['cases'][0]
+    store.add_document(state,'拆分更新',['预约时长至少30分钟。\n预约时长最多180分钟。'],'requirement',did);new=state['documents'][-1]['id']
+    items=[{'text':text,'citations':[{'document_id':new,'page':1,'quote':text}]} for text in state['documents'][-1]['pages'][0].splitlines()]
+    store.apply_extraction(state,new,items)
+    proposals=list(state['changes']);assert len(proposals)==2 and all(p['status']=='pending' for p in proposals)
+    for p in proposals:store.decide_change(state,p['id'],'add',[])
+    assert len(state['requirements'])==3 and r['status']=='confirmed' and c['status']=='draft'
+    # User explicitly removes original after accepting both split items; no automatic split equivalence.
+    store.edit_requirement(state,r['id'],r['text'],'excluded');assert c['status']=='needs_review'
+    for item in state['requirements'][1:]:store.edit_requirement(state,item['id'],item['text'],'confirmed')
+    store.add_document(state,'合并更新',['预约时长为30至180分钟。'],'requirement',new);merged=state['documents'][-1]['id']
+    store.apply_extraction(state,merged,[{'text':'预约时长为30至180分钟。','citations':[{'document_id':merged,'page':1,'quote':'预约时长为30至180分钟。'}]}])
+    proposal=state['changes'][-1];targets=proposal['old_ids'];assert len(targets)==2
+    with pytest.raises(ValueError):store.decide_change(state,proposal['id'],'replace',targets)
+    store.decide_change(state,proposal['id'],'add',[])
+    for item in state['requirements'][1:3]:store.edit_requirement(state,item['id'],item['text'],'excluded')
+    assert state['requirements'][-1]['status']=='draft'
+    # Empty updated document extraction yields possible removals requiring explicit choice.
+    store.add_document(state,'移除说明',['本文件不再定义预约时长。'],'requirement',merged);deleted=state['documents'][-1]['id']
+    store.apply_extraction(state,deleted,[]);removal=state['changes'][-1]
+    assert removal['kind']=='possibly_removed'
+    target=state['requirements'][-1];store.edit_requirement(state,target['id'],target['text']+' 用户补充','draft')
+    with pytest.raises(FileExistsError):store.decide_change(state,removal['id'],'remove',[target['id']])

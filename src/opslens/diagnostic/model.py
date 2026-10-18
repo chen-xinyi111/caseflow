@@ -51,7 +51,7 @@ def guard_messages(messages,secrets):
 
 def readiness(cfg):
     value=validate_settings(ModelSettings(**cfg['settings']))
-    if not value.enabled:raise ModelBlocked('新排查模型尚未启用；仍可整理和查看本机资料')
+    if not value.enabled:raise ModelBlocked('模型尚未启用；仍可整理和查看本机资料')
     if not key(cfg):raise ModelBlocked('未配置服务端环境变量 '+value.key_env)
     if value.mode=='free':QuotaGuard(key=key(cfg),endpoint=value.base_url).check(value.model)
     with db.connect() as c:
@@ -60,7 +60,7 @@ def readiness(cfg):
 
 def settings_status():
     with db.connect() as c:row=config(c);count=used(c)
-    try:readiness(row);available=True;reason='模型配置可用；开始分析后才发送选中资料'
+    try:readiness(row);available=True;reason='模型配置可用；开始处理后才发送选中资料'
     except (ValueError,ModelBlocked) as exc:available=False;reason=str(exc)
     return row|{'available':available,'reason':reason,'used_today':count}
 
