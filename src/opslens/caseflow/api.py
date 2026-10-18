@@ -24,6 +24,11 @@ class RequirementEdit(Revision):
     text:str=Field(min_length=1,max_length=3000)
     status:Literal['draft','confirmed','excluded']
     answer:str=Field(default='',max_length=3000)
+class ManualRequirement(Revision):
+    text:str=Field(min_length=1,max_length=3000)
+    document_id:UUID
+    page:int=Field(ge=1)
+    quote:str=Field(min_length=2,max_length=500)
 class CaseEdit(Revision):
     title:str|None=Field(default=None,min_length=1,max_length=200)
     preconditions:str|None=Field(default=None,max_length=1500)
@@ -87,6 +92,9 @@ async def upload(pid:UUID,file:UploadFile=File(...),revision:int=Form(...),role:
     raw=await file.read(5*1024*1024+1);name=(file.filename or '资料.txt').replace('\\','/').split('/')[-1]
     pages,warnings=checked(files.inspect,name,raw)
     return checked(lambda:store.public(store.update(pid,revision,'document',lambda s:store.add_document(s,name,pages,role,str(previous_id) if previous_id else None,warnings))))
+@router.post('/projects/{pid}/requirements')
+def manual_requirement(pid:UUID,data:ManualRequirement):
+    return checked(lambda:store.public(store.update(pid,data.revision,'manual_requirement',lambda s:store.manual_requirement(s,data.text,str(data.document_id),data.page,data.quote))))
 @router.post('/projects/{pid}/requirements/{rid}')
 def requirement(pid:UUID,rid:UUID,data:RequirementEdit):
     return checked(lambda:store.public(store.update(pid,data.revision,'requirement_review',lambda s:store.edit_requirement(s,str(rid),data.text,data.status,data.answer))))

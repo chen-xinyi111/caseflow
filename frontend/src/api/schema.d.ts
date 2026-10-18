@@ -90,6 +90,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/caseflow/projects/{pid}/requirements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Manual Requirement */
+        post: operations["manual_requirement_api_v1_caseflow_projects__pid__requirements_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/caseflow/projects/{pid}/requirements/{rid}": {
         parameters: {
             query?: never;
@@ -2443,6 +2460,22 @@ export interface components {
             /** Url */
             url: string;
         };
+        /** ManualRequirement */
+        ManualRequirement: {
+            /** Revision */
+            revision: number;
+            /** Text */
+            text: string;
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /** Page */
+            page: number;
+            /** Quote */
+            quote: string;
+        };
         /** ModelReadiness */
         ModelReadiness: {
             /** Available */
@@ -3524,6 +3557,41 @@ export interface operations {
         requestBody: {
             content: {
                 "multipart/form-data": components["schemas"]["Body_upload_api_v1_caseflow_projects__pid__files_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    manual_requirement_api_v1_caseflow_projects__pid__requirements_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualRequirement"];
             };
         };
         responses: {

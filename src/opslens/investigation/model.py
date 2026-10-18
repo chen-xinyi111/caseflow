@@ -31,11 +31,11 @@ class GenerationProvider(DashScopeProvider):
         data=self._call(self.name,"/services/aigc/text-generation/generation",payload,size+self.max_output)
         try:
             choice=data["output"]["choices"][0]
-            if choice.get("finish_reason")=="length":raise ValueError()
+            if choice.get("finish_reason")=="length":raise ModelFailure("模型输出被截断，请减少所选需求后分批生成；已有资料和用例仍保留")
             message=choice["message"]
             if message.get("role")!="assistant" or not isinstance(message.get("content",""),str):raise ValueError()
             calls=message.get("tool_calls",[])
             if not isinstance(calls,list) or len(calls)>12:raise ValueError()
             return {**message,"provider_request_id":data.get("request_id"),"usage":data.get("usage",{})}
         except (ValueError,KeyError,IndexError,TypeError):
-            raise ModelFailure("调查模型响应格式不合法或输出截断") from None
+            raise ModelFailure("模型响应格式不合法，草稿未保存，请检查处理记录") from None

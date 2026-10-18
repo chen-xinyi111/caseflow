@@ -189,3 +189,14 @@ def test_change_add_remove_split_merge_and_stale_decision(state):
     assert removal['kind']=='possibly_removed'
     target=state['requirements'][-1];store.edit_requirement(state,target['id'],target['text']+' 用户补充','draft')
     with pytest.raises(FileExistsError):store.decide_change(state,removal['id'],'remove',[target['id']])
+
+
+def test_manual_missing_requirement_keeps_literal_source_and_review_gate(state):
+    did=state['documents'][0]['id'];text='管理员可以查看全部预约。'
+    result=store.manual_requirement(state,text,did,1,text);r=state['requirements'][-1]
+    assert r['id']==result['requirement_id'] and r['origin']=='user' and r['status']=='draft'
+    assert r['citations']==[{'document_id':did,'page':1,'quote':text}]
+    assert store.manual_requirement(state,text,did,1,text)['reused'] and len(state['requirements'])==2
+    before=copy.deepcopy(state)
+    with pytest.raises(LookupError):store.manual_requirement(state,'编造','foreign',1,'不存在的规则')
+    assert state==before

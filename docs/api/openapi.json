@@ -245,6 +245,57 @@
         }
       }
     },
+    "/api/v1/caseflow/projects/{pid}/requirements": {
+      "post": {
+        "tags": [
+          "CaseFlow"
+        ],
+        "summary": "Manual Requirement",
+        "operationId": "manual_requirement_api_v1_caseflow_projects__pid__requirements_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualRequirement"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/caseflow/projects/{pid}/requirements/{rid}": {
       "post": {
         "tags": [
@@ -6748,6 +6799,47 @@
           "url"
         ],
         "title": "LinkInput"
+      },
+      "ManualRequirement": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Page"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 2,
+            "title": "Quote"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision",
+          "text",
+          "document_id",
+          "page",
+          "quote"
+        ],
+        "title": "ManualRequirement"
       },
       "ModelReadiness": {
         "properties": {

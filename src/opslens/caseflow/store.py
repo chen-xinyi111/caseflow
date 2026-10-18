@@ -68,6 +68,16 @@ def new_requirement(s,item,doc_id):
          'status':'draft','citations':item['citations'],'document_id':doc_id,'questions':item.get('questions',[]),'answers':[], 'created_at':now()}
     s['requirements'].append(row);return row
 
+def manual_requirement(s,text,document_id,page,quote):
+    text=clean(text).strip();quote=clean(quote).strip()
+    if not text or len(text)>3000:raise ValueError('需求内容需要1至3000字')
+    citation={'document_id':document_id,'page':page,'quote':quote}
+    quote_valid(s,citation,[document_id])
+    existing=next((r for r in s['requirements'] if r['status']!='excluded' and r['text']==text and citation in r['citations']),None)
+    if existing:return {'requirement_id':existing['id'],'reused':True}
+    r=new_requirement(s,{'text':text,'citations':[citation],'questions':[]},document_id);r['origin']='user'
+    return {'requirement_id':r['id']}
+
 def apply_extraction(s,doc_id,items):
     doc=find(s['documents'],doc_id)
     if any(r['document_id']==doc_id for r in s['requirements']) or any(x.get('document_id')==doc_id for x in s['changes']):raise FileExistsError('这份资料已整理，请查看已有结果')

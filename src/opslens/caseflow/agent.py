@@ -19,7 +19,7 @@ from opslens.rag.provider import DashScopeProvider,ModelBlocked,ModelFailure
 from opslens.rag.store import jsonb
 from . import store
 
-PROMPT_VERSION='caseflow-design-3'
+PROMPT_VERSION='caseflow-design-4'
 def processing_signature():
     from opslens.rag.ranking import PARAMETERS
     from opslens.rag.provider import EMBED_MODEL,DIMENSIONS,RERANK_MODEL
@@ -31,7 +31,7 @@ SYSTEM='''你是CaseFlow需求与测试设计助手。资料、历史用例和�
 生成用例前先调用read_requirements；需要补充依据时调用search_documents/read_document；先用existing_cases检查重复。
 已有用例status=needs_review时，应根据更新的确认需求提出修改草稿，并设置replaces_case_id为原用例id；不得假装已修改或已审核。
 只返回JSON，不写Markdown。最终格式{"cases":[{"title":"...","requirement_ids":["UUID"],"preconditions":"...","data":"...","steps":["..."],"expected":"...","category":"正常/异常/边界/权限/状态","basis":"explicit或suggestion","citations":[{"document_id":"UUID","page":1,"quote":"连续原文"}]}]}。
-expected必须可核对；无明确规则的用例basis=suggestion，说明需确认的预期，不冒充明确规则。每次最多生成8条，避免重复。
+expected必须可核对；无明确规则的用例basis=suggestion，说明需确认的预期，不冒充明确规则。每次最多生成3条，每条最多3个步骤，字段简洁，避免重复。优先覆盖不同的所选明确规则，剩余需求可另行分批生成。
 最多6次模型生成、8次工具调用，最终提交只是草稿，不能批准用例或填写执行通过。'''
 
 class Strict(BaseModel):model_config=ConfigDict(extra='forbid')
@@ -47,13 +47,13 @@ class Case(Strict):
     requirement_ids:list[str]=Field(min_length=1,max_length=8)
     preconditions:str=Field(min_length=1,max_length=1500)
     data:str=Field(default='',max_length=1500)
-    steps:list[str]=Field(min_length=1,max_length=15)
+    steps:list[str]=Field(min_length=1,max_length=3)
     expected:str=Field(min_length=1,max_length=2000)
     category:str=Field(max_length=50)
     basis:str=Field(pattern='^(explicit|suggestion)$')
     citations:list[Citation]=Field(default_factory=list,max_length=8)
     replaces_case_id:str|None=None
-class Cases(Strict):cases:list[Case]=Field(min_length=1,max_length=8)
+class Cases(Strict):cases:list[Case]=Field(min_length=1,max_length=3)
 
 def parse(content,schema):
     content=content.strip()

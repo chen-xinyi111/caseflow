@@ -273,3 +273,13 @@ def test_execution_import_binds_revision_and_preserves_all_or_nothing(client,mon
     invalid=files.xlsx(files.RESULT_HEADERS,[['T001',2,'未执行',''],['T999',1,'通过','错误编号']])
     response=client.post(url+'/runs/import',data={'revision':p['revision'],'name':'拒绝整批','request_id':str(uuid4())},files={'file':('invalid.xlsx',invalid)})
     assert response.status_code==400 and client.get(url).json()['revision']==p['revision']
+
+
+def test_manual_requirement_scope_quote_and_confirmation(client):
+    p=project(client);foreign=project(client);url='/api/v1/caseflow/projects/'+p['id'];doc=p['state']['documents'][0]
+    body={'revision':p['revision'],'text':'预约时长为30至120分钟。','document_id':doc['id'],'page':1,'quote':doc['pages'][0]}
+    assert client.post(url+'/requirements',json=body|{'document_id':foreign['state']['documents'][0]['id']}).status_code==404
+    assert client.post(url+'/requirements',json=body|{'quote':'未出现的规则'}).status_code==400
+    assert client.get(url).json()['revision']==p['revision']
+    response=client.post(url+'/requirements',json=body);assert response.status_code==200
+    r=response.json()['state']['requirements'][0];assert r['origin']=='user' and r['status']=='draft'
