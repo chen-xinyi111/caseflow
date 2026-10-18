@@ -19,7 +19,7 @@ from opslens.rag.provider import DashScopeProvider,ModelBlocked,ModelFailure
 from opslens.rag.store import jsonb
 from . import store
 
-PROMPT_VERSION='caseflow-design-4'
+PROMPT_VERSION='caseflow-design-5'
 def processing_signature():
     from opslens.rag.ranking import PARAMETERS
     from opslens.rag.provider import EMBED_MODEL,DIMENSIONS,RERANK_MODEL
@@ -31,7 +31,8 @@ SYSTEM='''你是CaseFlow需求与测试设计助手。资料、历史用例和�
 生成用例前先调用read_requirements；需要补充依据时调用search_documents/read_document；先用existing_cases检查重复。
 已有用例status=needs_review时，应根据更新的确认需求提出修改草稿，并设置replaces_case_id为原用例id；不得假装已修改或已审核。
 只返回JSON，不写Markdown。最终格式{"cases":[{"title":"...","requirement_ids":["UUID"],"preconditions":"...","data":"...","steps":["..."],"expected":"...","category":"正常/异常/边界/权限/状态","basis":"explicit或suggestion","citations":[{"document_id":"UUID","page":1,"quote":"连续原文"}]}]}。
-expected必须可核对；无明确规则的用例basis=suggestion，说明需确认的预期，不冒充明确规则。每次最多生成3条，每条最多3个步骤，字段简洁，避免重复。优先覆盖不同的所选明确规则，剩余需求可另行分批生成。
+expected必须可核对；无明确规则的用例basis=suggestion，说明需确认的预期，不冒充明确规则。每次最多生成3条，每条最多3个步骤，字段简洁，避免重复。只围绕本轮所选需求设计，不为凑满3条引入其他规则；只需1条时就返回1条。步骤写测试者能够执行的操作，不把系统内部校验当作操作步骤。
+citations.quote必须逐字复制对应页的连续原文，保留中间换行、编号和标点，不把不同段落拼成一个quote；需引用两处时分别填写两个引用。
 最多6次模型生成、8次工具调用，最终提交只是草稿，不能批准用例或填写执行通过。'''
 
 class Strict(BaseModel):model_config=ConfigDict(extra='forbid')
@@ -173,7 +174,7 @@ DEFINITIONS=[definition('read_requirements','读取本轮已确认需求、回�
  definition('search_documents','检索本轮授权资料，不搜索其他项目',{'query':{'type':'string'}},['query']),
  definition('read_document','读取授权原文页中的行范围',{'document_id':{'type':'string'},'page':{'type':'integer'},'start_line':{'type':'integer'},'end_line':{'type':'integer'}},['document_id','page','start_line','end_line'])]
 
-class State(TypedDict):messages:list;count:int;pending:list;result:dict|None;tool_count:int
+class State(TypedDict):messages:list;count:int;pending:list;result:dict|None;tool_count:int;repairs:int;retry:bool
 def generate(task,s,provider,rt):
     tools=Tools(s,task,provider)
     def model_node(st):
@@ -202,15 +203,30 @@ def generate(task,s,provider,rt):
         return {'messages':st['messages']+responses,'pending':[],'tool_count':st['tool_count']+len(st['pending'])}
     def validate(st):
         if not tools.read or not tools.existing:raise ValueError('模型未读取确认需求或检查已有用例，草稿未保存')
-        result=parse(st['messages'][-1].get('content',''),Cases)
-        # Validate all items on a copy first; one bad citation cannot partially save the batch.
         import copy
-        store.add_cases(copy.deepcopy(s),result['cases'],task['input']['requirement_ids'],task['input']['document_ids'])
-        return {'result':result}
+        try:
+            result=parse(st['messages'][-1].get('content',''),Cases)
+            # A rejected batch must never partially save or have its citations silently replaced.
+            store.add_cases(copy.deepcopy(s),result['cases'],task['input']['requirement_ids'],task['input']['document_ids'])
+        except (ValueError,LookupError) as exc:
+            if st['repairs']>=1 or st['count']>=6:
+                raise ValueError('生成结果未通过校验，未保存用例；请查看处理记录。原因：'+store.clean(str(exc))[:900]) from None
+            citations=[]
+            for rid in task['input']['requirement_ids']:
+                for citation in store.find(s['requirements'],rid)['citations']:
+                    try:store.quote_valid(s,citation,task['input']['document_ids'])
+                    except (ValueError,LookupError):continue
+                    if citation not in citations and len(citations)<8:citations.append(citation)
+            feedback={'error':store.clean(str(exc))[:900],
+                      'instruction':'上一批草稿未保存。请修正后重新提交完整cases JSON；只设计所选需求，不必凑满3条。引用必须逐字复制连续原文，跨段引用分开列出。下列引用只证明原文存在，不自动证明用例预期受支持。',
+                      'verified_requirement_citations':citations}
+            emit(rt,'生成内容未通过校验，正在修正一次；草稿尚未保存','validation',error=feedback['error'])
+            return {'messages':st['messages']+[{'role':'user','content':json.dumps(feedback,ensure_ascii=False)}],'repairs':st['repairs']+1,'retry':True}
+        return {'result':result,'retry':False}
     graph=StateGraph(State);graph.add_node('design',model_node);graph.add_node('tools',tool_node);graph.add_node('validate',validate)
-    graph.add_edge(START,'design');graph.add_conditional_edges('design',lambda st:'tools' if st['pending'] else 'validate');graph.add_edge('tools','design');graph.add_edge('validate',END)
+    graph.add_edge(START,'design');graph.add_conditional_edges('design',lambda st:'tools' if st['pending'] else 'validate');graph.add_edge('tools','design');graph.add_conditional_edges('validate',lambda st:'design' if st['retry'] else END)
     payload={'requirements':task['input']['requirement_ids'],'documents':[{'id':d['id'],'name':d['name'],'pages':len(d['pages']),'lines_per_page':[len(page.splitlines()) for page in d['pages']]} for d in s['documents'] if d['id'] in task['input']['document_ids']]}
-    result=graph.compile().invoke({'messages':[{'role':'system','content':SYSTEM},{'role':'user','content':json.dumps(payload,ensure_ascii=False)}],'count':0,'pending':[],'result':None,'tool_count':0},{'recursion_limit':30})
+    result=graph.compile().invoke({'messages':[{'role':'system','content':SYSTEM},{'role':'user','content':json.dumps(payload,ensure_ascii=False)}],'count':0,'pending':[],'result':None,'tool_count':0,'repairs':0,'retry':False},{'recursion_limit':30})
     return result['result']['cases']
 
 def extract(task,s,provider,rt):

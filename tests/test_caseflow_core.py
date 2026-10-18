@@ -200,3 +200,66 @@ def test_manual_missing_requirement_keeps_literal_source_and_review_gate(state):
     before=copy.deepcopy(state)
     with pytest.raises(LookupError):store.manual_requirement(state,'编造','foreign',1,'不存在的规则')
     assert state==before
+
+
+@pytest.mark.parametrize('fault',['joined_quote','unauthorized_document','missing_field'])
+@pytest.mark.parametrize('fixed',[True,False])
+def test_agent_validation_feedback_is_bounded_and_never_saves_bad_batch(state,monkeypatch,fault,fixed):
+    import json
+    from opslens.caseflow import agent
+    from uuid import uuid4
+    did=state['documents'][0]['id'];rid=state['requirements'][0]['id']
+    store.add_document(state,'本轮未授权资料',['独立的参考说明。'])
+    foreign=state['documents'][-1]['id'];before=copy.deepcopy(state)
+    invalid=case(state,'非法引用候选')
+    if fault=='joined_quote':
+        invalid['citations']=[{'document_id':did,'page':1,'quote':'预约时长为30至120分钟。管理员可以查看全部预约。'}]
+    elif fault=='unauthorized_document':
+        invalid['citations']=[{'document_id':foreign,'page':1,'quote':'独立的参考说明。'}]
+    else:invalid.pop('expected')
+    events=[]
+    monkeypatch.setattr(agent,'emit',lambda rt,message,kind='progress',**kw:events.append((kind,kw)))
+    class Runtime:
+        def operation(self,key,fn):return fn()
+    class Provider:
+        def __init__(self):self.keys=[]
+        def generate(self,messages,tools,key):
+            self.keys.append(key);assert state==before
+            n=int(key.split(':')[-1])
+            if n==0:
+                return {'role':'assistant','content':'','tool_calls':[{'id':str(uuid4()),'function':{'name':name,'arguments':'{}'}} for name in ('read_requirements','existing_cases')],'usage':{'total_tokens':10}}
+            if n==2:
+                feedback=json.loads(messages[-1]['content'])
+                assert feedback['verified_requirement_citations']==state['requirements'][0]['citations']
+                assert all(c['document_id']!=foreign for c in feedback['verified_requirement_citations'])
+            output=[case(state)] if fixed and n==2 else [case(state),invalid]
+            return {'role':'assistant','content':json.dumps({'cases':output},ensure_ascii=False),'usage':{'total_tokens':10}}
+    provider=Provider();task={'input':{'document_ids':[did],'requirement_ids':[rid]}}
+    if fixed:
+        result=agent.generate(task,state,provider,Runtime())
+        assert result==[case(state)|{'replaces_case_id':None}]
+    else:
+        with pytest.raises(ValueError,match='生成结果未通过校验，未保存用例'):
+            agent.generate(task,state,provider,Runtime())
+    assert provider.keys==['generate:0','generate:1','generate:2']
+    assert state==before and len([e for e in events if e[0]=='validation'])==1
+
+
+def test_agent_validation_repair_cannot_exceed_total_model_call_limit(state,monkeypatch):
+    import json
+    from opslens.caseflow import agent
+    calls=[];before=copy.deepcopy(state)
+    monkeypatch.setattr(agent,'emit',lambda *a,**k:None)
+    class Runtime:
+        def operation(self,key,fn):return fn()
+    class Provider:
+        def generate(self,messages,tools,key):
+            calls.append(key);n=int(key.split(':')[-1])
+            if n<5:
+                names=('read_requirements','existing_cases') if n==0 else ('read_requirements',)
+                return {'role':'assistant','content':'','tool_calls':[{'id':key+name,'function':{'name':name,'arguments':'{}'}} for name in names],'usage':{'total_tokens':10}}
+            bad=copy.deepcopy(case(state));bad['citations'][0]=bad['citations'][0]|{'quote':'不存在的原文'}
+            return {'role':'assistant','content':json.dumps({'cases':[bad]}),'usage':{'total_tokens':10}}
+    with pytest.raises(ValueError,match='生成结果未通过校验'):
+        agent.generate({'input':{'document_ids':[state['documents'][0]['id']],'requirement_ids':[state['requirements'][0]['id']]}},state,Provider(),Runtime())
+    assert len(calls)==6 and state==before

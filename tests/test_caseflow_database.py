@@ -283,3 +283,31 @@ def test_manual_requirement_scope_quote_and_confirmation(client):
     assert client.get(url).json()['revision']==p['revision']
     response=client.post(url+'/requirements',json=body);assert response.status_code==200
     r=response.json()['state']['requirements'][0];assert r['origin']=='user' and r['status']=='draft'
+
+
+def test_agent_repairs_invalid_quote_before_atomic_commit(client,monkeypatch):
+    class RepairProvider(ControlledProvider):
+        def generate(self,messages,tools,key):
+            if key.startswith('extract:') or key in ('generate:0','generate:1'):
+                return super().generate(messages,tools,key)
+            def response():
+                req=json.loads(next(m['content'] for m in messages if m.get('tool_call_id')=='req'))[0]
+                quote=req['citations'][0] if key=='generate:3' else req['citations'][0]|{'quote':'模型改写的预约规则'}
+                if key=='generate:3':
+                    assert json.loads(messages[-1]['content'])['verified_requirement_citations']==req['citations']
+                item={'title':'核对30分钟边界','requirement_ids':[req['id']],'preconditions':'存在空闲时段','data':'30分钟','steps':['提交30分钟预约'],'expected':'满足其他规则时允许该时长','category':'边界','basis':'explicit','citations':[quote]}
+                return {'role':'assistant','content':json.dumps({'cases':[item]},ensure_ascii=False),'usage':{'total_tokens':10}}
+            return self.rt.operation(key,response,paid=True)
+    monkeypatch.setattr(agent,'Provider',RepairProvider)
+    p=project(client);url='/api/v1/caseflow/projects/'+p['id']
+    client.post(url+'/tasks',json=task_body(p,'extract'));agent.process(durability.claim('caseflow'))
+    p=client.get(url).json();r=p['state']['requirements'][0]
+    p=client.post(url+'/requirements/'+r['id'],json={'revision':p['revision'],'text':r['text'],'status':'confirmed'}).json()
+    t=client.post(url+'/tasks',json=task_body(p,'generate')).json();agent.process(durability.claim('caseflow'))
+    assert client.get('/api/v1/caseflow/tasks/'+t['id']).json()['status']=='completed'
+    saved=client.get(url).json()['state']['cases'];assert len(saved)==1 and saved[0]['citations']==r['citations']
+    with db.connect() as c:
+        invalid=c.execute("SELECT result FROM durable_operations WHERE task_id=%s AND operation_key='generate:2'",(t['id'],)).fetchone()
+        assert json.loads(invalid['result']['content'])['cases'][0]['citations'][0]['quote']=='模型改写的预约规则'
+        assert c.execute("SELECT count(*) n FROM cf_events WHERE task_id=%s AND kind='validation'",(t['id'],)).fetchone()['n']==1
+        assert c.execute('SELECT count(*) n FROM cf_requests').fetchone()['n']==0
