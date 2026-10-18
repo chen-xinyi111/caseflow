@@ -154,7 +154,9 @@ def add_cases(s,items,allowed_requirements,allowed_documents):
     return {'cases_added':added}
 
 def edit_case(s,cid,values):
-    row=find(s['cases'],cid);snapshot(s,'case',row)
+    row=find(s['cases'],cid)
+    if row.get('applied_to'):raise ValueError('此建议已应用，请查看并编辑原用例')
+    snapshot(s,'case',row)
     explicit_approval=values.get('status')=='approved'
     status=values.pop('status',row['status']);note=values.pop('review_note',row.get('review_note',''))
     if status not in ('draft','approved','rejected','needs_review'):raise ValueError('用例状态无效')

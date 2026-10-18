@@ -78,6 +78,7 @@ def test_proposal_application_keeps_original_identity(state):
     store.accept_proposal(state,new['id'])
     assert c['code']=='T001' and c['revision']==2 and c['status']=='draft'
     assert new['status']=='rejected' and state['history'][-1]['value']['title']=='检查30分钟边界'
+    with pytest.raises(ValueError):store.edit_case(state,new['id'],{'status':'approved','review_note':'不应重复批准已应用建议'})
 
 def test_docx_visible_text_and_bounded_office():
     stream=io.BytesIO()
