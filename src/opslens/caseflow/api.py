@@ -15,6 +15,7 @@ router=APIRouter(prefix='/api/v1/caseflow',tags=['CaseFlow'])
 class Strict(BaseModel):model_config=ConfigDict(extra='forbid')
 class Create(Strict):name:str=Field(min_length=1,max_length=100)
 class Revision(Strict):revision:int=Field(ge=1)
+class Archive(Revision):archived:bool
 class Text(Revision):
     name:str=Field(default='需求说明',min_length=1,max_length=200)
     content:str=Field(min_length=1,max_length=100000)
@@ -87,12 +88,16 @@ def checked(fn,*args,**kwargs):
 @router.get('/projects')
 def projects():
     with db.connect() as c:
-        return [{k:p[k] for k in ('id','name','revision','updated_at')}|{'summary':store.summary(p['state'])} for p in c.execute('SELECT * FROM cf_projects ORDER BY updated_at DESC').fetchall()]
+        return [{k:p[k] for k in ('id','name','revision','updated_at')}|{'summary':store.summary(p['state']),'archived':bool(p['state'].get('archived',False))} for p in c.execute('SELECT * FROM cf_projects ORDER BY updated_at DESC').fetchall()]
 @router.post('/projects',status_code=201)
 def create(data:Create):return checked(lambda:store.public(store.create(data.name)))
 @router.get('/projects/{pid}')
 def project(pid:UUID):
     with db.connect() as c:return checked(lambda:store.public(store.get(c,pid)))
+@router.post('/projects/{pid}/archive')
+
+def archive(pid:UUID,data:Archive):
+    return checked(lambda:store.public(store.update(pid,data.revision,'archive',lambda s:store.set_archived(s,data.archived))))
 @router.get('/projects/{pid}/history')
 def history(pid:UUID):
     with db.connect() as c:

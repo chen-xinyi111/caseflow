@@ -102,6 +102,57 @@
         }
       }
     },
+    "/api/v1/caseflow/projects/{pid}/archive": {
+      "post": {
+        "tags": [
+          "CaseFlow"
+        ],
+        "summary": "Archive",
+        "operationId": "archive_api_v1_caseflow_projects__pid__archive_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Archive"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/caseflow/projects/{pid}/history": {
       "get": {
         "tags": [
@@ -4394,6 +4445,26 @@
           "confirm"
         ],
         "title": "Approve"
+      },
+      "Archive": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "archived": {
+            "type": "boolean",
+            "title": "Archived"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision",
+          "archived"
+        ],
+        "title": "Archive"
       },
       "Batch": {
         "properties": {

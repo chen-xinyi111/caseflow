@@ -6,7 +6,7 @@
 
 CaseFlow面向产品、开发和测试人员，将现有需求资料整理成可核对的需求清单，辅助设计供人工执行的检查步骤和预期结果，保存审核、需求变更和实际执行记录。本机部署，支持Word、文本型PDF、Markdown和TXT；当前不生成或运行自动化测试代码。
 
-![CaseFlow 工作台](docs/screenshots/caseflow-home.jpg)
+![CaseFlow 需求工作区](docs/screenshots/caseflow-start.png)
 
 ## 使用流程
 
@@ -17,9 +17,7 @@ CaseFlow面向产品、开发和测试人员，将现有需求资料整理成可
 5. 更新需求，逐项确认变更，保留原用例和人工修改。
 6. 记录实际执行结果，或使用Excel／CSV模板导入，按用例修订查看历史。
 
-页面内置会议室预约、文件共享和活动报名示例。示例不是生产记录，生成用例也不代表测试已经执行。
-
-![用例审核与交付](docs/screenshots/caseflow-workbench.png)
+日常界面从空白项目开始，不预填场景或示例资料。顶部显示当前进度与下一步，资料读取后直接进入规则核对，依据检查完成后直接显示结果。项目可归档和恢复，正文与历史保留。生成清单不代表测试已经执行。
 
 ## 功能
 
@@ -48,7 +46,7 @@ cd opslens-ai
 
 打开[CaseFlow](http://127.0.0.1:18180/)。在设置中配置服务端密钥环境变量名称和模型服务，再明确启用。模型默认关闭；免费模式要求当前账户的有效免费额度核验，不以密钥存在代表有免费额度。
 
-[示例资料](data/caseflow-examples) · [演示步骤](docs/DEMO.md) · [使用说明](docs/PRODUCT.md) · [部署配置](docs/DEPLOYMENT.md) · [架构](docs/ARCHITECTURE.md) · [验证范围](docs/VALIDATION.md)
+[操作步骤](docs/DEMO.md) · [使用说明](docs/PRODUCT.md) · [部署配置](docs/DEPLOYMENT.md) · [架构](docs/ARCHITECTURE.md) · [验证范围](docs/VALIDATION.md)
 
 ## 实现与边界
 

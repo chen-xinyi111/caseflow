@@ -29,6 +29,11 @@ def create(name):
     name=clean(name).strip()
     if not name or len(name)>100:raise ValueError('项目名称需要1至100字')
     with db.connect() as c:return c.execute('INSERT INTO cf_projects(id,name,state) VALUES (%s,%s,%s) RETURNING *',(uuid4(),name,jsonb(empty()))).fetchone()
+
+def set_archived(s,archived):
+    # Hiding a project never changes its documents, reviews, runs or task results.
+    s['archived']=archived
+    return {'archived':archived}
 def update(pid,revision,action,fn):
     with db.connect() as c:
         p=get(c,pid,True)

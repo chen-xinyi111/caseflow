@@ -32,6 +32,20 @@ def client(monkeypatch):
     finally:
         with original() as c:c.execute(psycopg.sql.SQL('DROP SCHEMA {} CASCADE').format(psycopg.sql.Identifier(schema)))
 
+def test_archive_is_reversible_preserves_assets_and_rejects_stale_writes(client):
+    p=client.post('/api/v1/caseflow/projects',json={'name':'归档契约检查'}).json()
+    base='/api/v1/caseflow/projects/'+p['id']
+    p=client.post(base+'/texts',json={'revision':p['revision'],'name':'原资料','content':'现有正文'}).json()
+    before=p['state']
+    archived=client.post(base+'/archive',json={'revision':p['revision'],'archived':True})
+    assert archived.status_code==200
+    saved=archived.json()
+    assert saved['state']==before|{'archived':True}
+    assert next(x for x in client.get('/api/v1/caseflow/projects').json() if x['id']==p['id'])['archived'] is True
+    assert client.post(base+'/archive',json={'revision':p['revision'],'archived':False}).status_code==409
+    restored=client.post(base+'/archive',json={'revision':saved['revision'],'archived':False}).json()
+    assert restored['state']==before|{'archived':False}
+
 class ControlledProvider:
     def __init__(self,rt,cfg):self.rt=rt;self.calls=0
     def generate(self,messages,tools,key):
