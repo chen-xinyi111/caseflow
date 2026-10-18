@@ -18,7 +18,7 @@ def validate_settings(value):
     if url.username or url.password or url.query or url.fragment or not url.hostname:raise ValueError('接口地址不能包含凭据、查询参数或片段')
     if value.mode=='free':
         if value.key_env!='DASHSCOPE_APIKEY' or value.base_url.rstrip('/')!=api_base():raise ValueError('免费模式使用已核验的百炼北京端点和DASHSCOPE_APIKEY')
-        if value.model not in ('qwen3.8-max','deepseek-v4.1-flash'):raise ValueError('免费模式模型不在既有范围内')
+        if value.model not in ('qwen3.8-max','qwen3.8-max-0902','deepseek-v4.1-flash'):raise ValueError('免费模式模型不在既有范围内')
     elif url.scheme!='https' and not(url.scheme=='http' and url.hostname in ('localhost','127.0.0.1','::1')):
         raise ValueError('兼容接口需要HTTPS；仅本机模型允许HTTP')
     if value.mode=='compatible' and not url.path.rstrip('/').endswith('/v1'):raise ValueError('兼容接口填写以/v1结尾的基础地址')

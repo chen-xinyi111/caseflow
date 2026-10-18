@@ -24,7 +24,7 @@ for ($taskCloseAttempt=0;$taskCloseAttempt -lt 10;$taskCloseAttempt++) {
 $taskProbe=[Net.Sockets.TcpClient]::new()
 try { $taskProbe.Connect('127.0.0.1',18180); throw 'Another process occupies port 18180; refusing to start.' }
 catch [Net.Sockets.SocketException] {} finally { $taskProbe.Dispose() }
-if ($StopOnly) { Write-Output 'OpsLens platform paused; lab services were not changed.'; return }
+if ($StopOnly) { Write-Output 'CaseFlow platform paused; lab services were not changed.'; return }
 $taskLogStamp=[DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss-fff')
 $taskStdout=Join-Path $RuntimeRoot "platform-$taskLogStamp.stdout.log"
 $taskStderr=Join-Path $RuntimeRoot "platform-$taskLogStamp.stderr.log"
@@ -34,7 +34,7 @@ $taskProcess=Start-Process -FilePath $PythonExe -ArgumentList @('-m','uvicorn','
 for ($taskAttempt=0;$taskAttempt -lt 40;$taskAttempt++) {
     try {
         $taskHealth=Invoke-RestMethod 'http://127.0.0.1:18180/api/v1/health' -TimeoutSec 2
-        if ($taskHealth.delivery -eq '3.3' -and $taskHealth.version -eq '0.5.0') { Write-Output 'OpsLens ready: http://127.0.0.1:18180/'; return }
+        if ($taskHealth.delivery -eq '3.3' -and $taskHealth.version -eq '0.5.0') { Write-Output 'CaseFlow ready: http://127.0.0.1:18180/'; return }
     } catch {}
     Start-Sleep -Milliseconds 500
 }

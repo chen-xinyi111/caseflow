@@ -15,7 +15,5 @@ if ($Scope -in @('Fault','All')) { Invoke-Compose 'fault' @('up','--build','-d',
 $taskCurrent = $null
 try { $taskCurrent = Invoke-RestMethod 'http://127.0.0.1:18180/api/v1/health' -TimeoutSec 2 } catch {}
 if (!$taskCurrent -or $taskCurrent.delivery -ne '3.3' -or $taskCurrent.version -ne '0.5.0') { & "$PSScriptRoot/RestartPlatform.ps1" -SkipBuild }
-& $PythonExe (Join-Path $ProjectRoot 'scripts/seed_knowledge.py')
-Assert-Native '内置手册和关键词索引'
-Write-Output "OpsLens 已就绪（$Scope）：http://127.0.0.1:18180/"
+Write-Output "CaseFlow 已就绪：http://127.0.0.1:18180/"
 Write-Output '默认仅操作平台。实验实例需显式选择Fault或All；启动不调用模型。'

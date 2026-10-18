@@ -42,4 +42,4 @@ foreach ($taskLab in @('healthy','fault')) {
     $taskLabPath = Join-Path $RuntimeRoot "$taskLab.env"
     if (!(Test-Path -LiteralPath $taskLabPath)) { [IO.File]::WriteAllText($taskLabPath, $taskText, [Text.UTF8Encoding]::new($false)) }
 }
-Write-Output 'OpsLens configuration ready; secrets remain local.'
+Write-Output 'CaseFlow configuration ready; secrets remain local.'
