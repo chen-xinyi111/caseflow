@@ -38,8 +38,8 @@ CaseFlow面向产品、开发和测试人员，将现有需求资料整理成可
 准备Windows、PowerShell 7、Docker Desktop Linux容器、Python 3.12–3.14、Node.js 24和pnpm 11：
 
 ```powershell
-git clone https://github.com/chen-xinyi111/opslens-ai.git
-cd opslens-ai
+git clone https://github.com/chen-xinyi111/caseflow.git
+cd caseflow
 ./scripts/local/Setup.ps1
 ./scripts/local/Start.ps1
 ```

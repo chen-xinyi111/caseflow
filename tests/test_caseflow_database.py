@@ -137,9 +137,50 @@ def test_long_input_walks_every_segment_and_preserves_each_page(client,monkeypat
     task=client.get('/api/v1/caseflow/tasks/'+response.json()['id']).json();assert task['status']=='completed',task
     with db.connect() as c:
         rows=c.execute("SELECT operation_key,result FROM durable_operations WHERE task_id=%s AND operation_key LIKE 'extract:%%'",(response.json()['id'],)).fetchall()
-    from opslens.rag.text import split_pages
-    assert len(rows)==len(split_pages(pages,max_chars=2000,overlap=150))
+    assert len(rows)==len(agent.extraction_segments(pages))
     assert {x['page'] for row in rows for r in json.loads(row['result']['content'])['requirements'] for x in r['citations']}=={1,2,3}
+
+
+def test_dense_requirements_are_read_in_small_batches_without_losing_source(client,monkeypatch):
+    seen=[]
+    class DenseProvider(ControlledProvider):
+        def generate(self,messages,tools,key):
+            if key.startswith('extract:'):
+                payload=json.loads(messages[-1]['content'])
+                seen.append(payload['text'])
+                assert len(payload['text'])<=400
+            return super().generate(messages,tools,key)
+    monkeypatch.setattr(agent,'Provider',DenseProvider)
+    p=client.post('/api/v1/caseflow/projects',json={'name':'密集规则读取'}).json()
+    url='/api/v1/caseflow/projects/'+p['id']
+    body='\n\n'.join(f'R{i:02d}：第{i}条会议室预约规则，人数、时间边界和权限均须满足，未知条件不得自行补充。' for i in range(1,18))
+    p=client.post(url+'/texts',json={'revision':p['revision'],'content':body}).json()
+    t=client.post(url+'/tasks',json=task_body(p,'extract')).json()
+    agent.process(durability.claim('caseflow'))
+    assert client.get('/api/v1/caseflow/tasks/'+t['id']).json()['status']=='completed'
+    assert len(seen)>1 and ''.join(seen)==body
+    assert client.get(url).json()['state']['documents'][0]['pages']==[body]
+
+
+def test_extraction_truncation_keeps_original_and_partial_results_with_correct_message(client,monkeypatch):
+    from opslens.rag.provider import ModelFailure
+    class TruncatedProvider(ControlledProvider):
+        def generate(self,messages,tools,key):
+            if key.endswith(':1'):raise ModelFailure('模型输出被截断，请减少所选需求后分批生成')
+            return super().generate(messages,tools,key)
+    monkeypatch.setattr(agent,'Provider',TruncatedProvider)
+    p=client.post('/api/v1/caseflow/projects',json={'name':'读取截断检查'}).json()
+    url='/api/v1/caseflow/projects/'+p['id']
+    body='\n\n'.join(f'R{i}：'+('预约规则。'*20) for i in range(1,8))
+    p=client.post(url+'/texts',json={'revision':p['revision'],'content':body}).json()
+    before=p['state']
+    t=client.post(url+'/tasks',json=task_body(p,'extract')).json()
+    agent.process(durability.claim('caseflow'))
+    saved=client.get('/api/v1/caseflow/tasks/'+t['id']).json()
+    assert saved['status']=='failed' and '读取需求' in saved['error']
+    assert '所选需求' not in saved['error']
+    assert saved['result']['partial'] and saved['result']['completed_segments']==1
+    assert client.get(url).json()['state']==before
 
 def test_conflicting_documents_are_not_silently_merged(client,monkeypatch):
     monkeypatch.setattr(agent,'Provider',ControlledProvider);p=project(client);url='/api/v1/caseflow/projects/'+p['id']
@@ -165,6 +206,37 @@ def test_budget_reservation_preserves_first_result_and_blocks_next_call(client):
     with pytest.raises(ModelBlocked):provider.call('two',lambda:pytest.fail('budget bypassed'))
     with db.connect() as c:assert c.execute('SELECT count(*) n FROM cf_requests').fetchone()['n']==1
     assert sent==[1]
+
+
+@pytest.mark.parametrize('error_kind',['json','quote','unknown_usage','twice'])
+def test_extraction_repairs_known_invalid_output_once_and_never_invents_citations(client,monkeypatch,error_kind):
+    calls=[]
+    class RepairProvider(ControlledProvider):
+        def generate(self,messages,tools,key):
+            calls.append(key)
+            if not key.endswith(':repair') or error_kind=='twice':
+                if error_kind=='quote':
+                    data=json.loads(messages[-1]['content'])
+                    content=json.dumps({'requirements':[{'text':'预约规则','citations':[{'document_id':data['document_id'],'page':1,'quote':'原文中不存在的引用'}]}]})
+                else:content='{"requirements":[{"text":"状态为"维护中""}]}'
+                return self.rt.operation(key,lambda:{'content':content,'usage':{} if error_kind=='unknown_usage' else {'total_tokens':10}},paid=True)
+            # The repair conversation must contain the source and actual validation feedback.
+            assert 'error' in json.loads(messages[-1]['content'])
+            return super().generate(messages[:2],tools,key)
+    monkeypatch.setattr(agent,'Provider',RepairProvider)
+    p=project(client);url='/api/v1/caseflow/projects/'+p['id']
+    before=p['state']
+    t=client.post(url+'/tasks',json=task_body(p,'extract')).json()
+    agent.process(durability.claim('caseflow'))
+    saved=client.get('/api/v1/caseflow/tasks/'+t['id']).json()
+    assert len(calls)==(1 if error_kind=='unknown_usage' else 2)
+    after=client.get(url).json()['state']
+    if error_kind in ('json','quote'):
+        assert saved['status']=='completed',saved
+        assert after['requirements'][0]['citations'][0]['quote']==before['documents'][0]['pages'][0]
+    else:
+        assert saved['status']==('blocked' if error_kind=='unknown_usage' else 'failed')
+        assert after==before
 
 def text_pdf(text='Meeting duration is 30 to 120 minutes.'):
     stream=('BT /F1 12 Tf 40 750 Td ('+text+') Tj ET').encode()

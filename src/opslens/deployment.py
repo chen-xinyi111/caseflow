@@ -4,7 +4,7 @@ from pathlib import Path
 from opslens.config import ROOT
 from opslens.collector import docker
 GiB=1024**3
-SCOPES={'Platform':(18180,18183),'Fault':(18180,18182,18183),'All':(18180,18181,18182,18183)}
+SCOPES={'Platform':(18180,18283),'Fault':(18180,18182,18283),'All':(18180,18181,18182,18283)}
 
 def resource_checks(os_type,docker_memory,available_memory,disk_free,python_version):
     return [{'name':name,'ok':ok,'message':message} for name,ok,message in [
@@ -52,12 +52,12 @@ def inspect_environment(scope='Platform'):
     info=json.loads(docker(['info','--format','{{json .}}']))
     checks=resource_checks(info.get('OSType'),info.get('MemTotal',0),memory_available(),shutil.disk_usage(ROOT).free,sys.version_info[:2])
     owned=set()
-    projects=['opslens-platform']+(['opslens-lab-fault'] if scope in ('Fault','All') else [])+(['opslens-lab-healthy'] if scope=='All' else [])
+    projects=['caseflow-platform']+(['opslens-lab-fault'] if scope in ('Fault','All') else [])+(['opslens-lab-healthy'] if scope=='All' else [])
     for project in projects:
         for cid in docker(['ps','-q','--filter','label=com.docker.compose.project='+project]).split():
             row=json.loads(docker(['inspect',cid]))[0]
             labels=row['Config'].get('Labels') or {}
-            expected='platform' if project=='opslens-platform' else 'lab'
+            expected='platform' if project=='caseflow-platform' else 'lab'
             if labels.get('com.docker.compose.project')!=project or labels.get('io.opslens.scope')!=expected:continue
             for bindings in row['NetworkSettings'].get('Ports',{}).values():
                 for b in bindings or []:

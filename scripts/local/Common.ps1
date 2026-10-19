@@ -35,7 +35,7 @@ function Import-LocalSettings {
 function Invoke-Compose([string]$Target, [string[]]$Arguments) {
     if ($Target -notin @('platform','healthy','fault')) { throw 'Unknown OpsLens target' }
     if ($Target -eq 'platform') {
-        $taskProject = 'opslens-platform'
+        $taskProject = 'caseflow-platform'
         $taskFile = Join-Path $ProjectRoot 'compose/platform.yaml'
         $taskEnv = Join-Path $ProjectRoot '.env'
     } else {

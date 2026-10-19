@@ -11,12 +11,12 @@ def test_resources_require_linux_daemon_memory_and_disk():
 def test_port_owner_cannot_be_faked_by_health_response():
     with pytest.raises(RuntimeError,match='18180'):
         check_ports('Platform',set(),lambda p:True,False)
-    check_ports('Platform',{18183},lambda p:True,True)
+    check_ports('Platform',{18283},lambda p:True,True)
 
 def test_default_scope_does_not_inspect_or_change_healthy_ports():
     seen=[]
     check_ports('Fault',set(),lambda p:seen.append(p) or False,False)
-    assert set(seen)=={18180,18182,18183}
+    assert set(seen)=={18180,18182,18283}
     with pytest.raises(ValueError):check_ports('project-one',set(),lambda p:False,False)
 
 

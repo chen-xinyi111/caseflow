@@ -18,6 +18,15 @@ def test_compatible_generation_fixed_model_tools_and_no_thinking(tmp_path):
     route,payload=calls[0]
     assert p._url(route)=="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions" and payload["model"]==MODEL
     assert payload["enable_thinking"] is False and payload["enable_search"] is False
+    assert 'response_format' not in payload
+
+def test_json_output_is_explicit_without_changing_model_or_output_budget(tmp_path):
+    value={"choices":[{"message":{"role":"assistant","content":"{}"},"finish_reason":"stop"}],"usage":{"total_tokens":5}}
+    p,calls=provider(tmp_path,value);p.json_output=True
+    p.generate([{'role':'user','content':'Return JSON'}],[])
+    payload=calls[0][1]
+    assert payload['response_format']=={'type':'json_object'}
+    assert payload['model']==MODEL and payload['max_tokens']==1800
 def test_generation_guard_prevents_request(tmp_path):
     p,calls=provider(tmp_path,{},False)
     with pytest.raises(ModelBlocked):p.generate([],[])

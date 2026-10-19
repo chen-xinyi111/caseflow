@@ -3,9 +3,9 @@ from concurrent.futures import ThreadPoolExecutor
 from opslens.rag.provider import DashScopeProvider,ModelFailure,model_http_client
 MODEL="qwen3.8-max"
 class GenerationProvider(DashScopeProvider):
-    def __init__(self,*args,model=MODEL,max_output=1800,**kwargs):
+    def __init__(self,*args,model=MODEL,max_output=1800,json_output=False,**kwargs):
         if model not in (MODEL,'qwen3.8-max-0902','deepseek-v4.1-flash'):raise ValueError('生成模型不在已授权范围')
-        super().__init__(*args,**kwargs);self.name=model;self.max_output=min(2048,max_output)
+        super().__init__(*args,**kwargs);self.name=model;self.max_output=min(2048,max_output);self.json_output=json_output
     def prepare_parallel(self):
         # Check quota first; establish two verified connections without credentials or data.
         self.guard.check(self.name)
@@ -25,6 +25,7 @@ class GenerationProvider(DashScopeProvider):
         return {**data,"output":{"choices":data.get("choices",[])},"request_id":data.get("id")}
     def generate(self,messages,tools):
         payload={"model":self.name,"messages":messages,"temperature":0.1,"max_tokens":self.max_output,"enable_thinking":False,"preserve_thinking":False,"enable_search":False,"tools":tools}
+        if self.json_output:payload['response_format']={'type':'json_object'}
         if self.name=='deepseek-v4.1-flash':payload.pop('preserve_thinking')
         size=len(json.dumps(payload,ensure_ascii=False).encode())
         if size>90000:raise ModelFailure("调查上下文超出保守长度上限")

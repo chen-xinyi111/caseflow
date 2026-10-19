@@ -95,7 +95,7 @@ def test_network_volume_and_port_isolation():
                 assert not obj["HostConfig"].get("PortBindings")
     assert networks["healthy"].isdisjoint(networks["fault"])
     assert volumes["healthy"].isdisjoint(volumes["fault"])
-    platform_ids = docker(["ps","-q","--filter","label=com.docker.compose.project=opslens-platform"]).split()
+    platform_ids = docker(["ps","-q","--filter","label=com.docker.compose.project=caseflow-platform"]).split()
     assert len(platform_ids) == 1
     platform = json.loads(docker(["inspect",platform_ids[0]]))[0]
     assert set(platform["NetworkSettings"]["Networks"]).isdisjoint(networks["healthy"] | networks["fault"])

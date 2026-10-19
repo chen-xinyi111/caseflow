@@ -48,7 +48,7 @@ def main():
     target = ROOT / '.archives' / stamp
     target.mkdir(parents=True, exist_ok=False)
     docker = docker_executable()
-    ids = subprocess.check_output([docker, 'ps', '-q', '--filter', 'label=com.docker.compose.project=opslens-platform', '--filter', 'label=com.docker.compose.service=postgres'], text=True).split()
+    ids = subprocess.check_output([docker, 'ps', '-q', '--filter', 'label=com.docker.compose.project=caseflow-platform', '--filter', 'label=com.docker.compose.service=postgres'], text=True).split()
     if len(ids) != 1:
         raise RuntimeError('Expected exactly one running OpsLens database')
     container = ids[0]
