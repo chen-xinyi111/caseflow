@@ -5,6 +5,308 @@
     "version": "0.5.0"
   },
   "paths": {
+    "/api/v1/caseflow/projects/{pid}/documents": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Listing",
+        "operationId": "listing_api_v1_caseflow_projects__pid__documents_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/documents/{did}": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Detail",
+        "operationId": "detail_api_v1_caseflow_projects__pid__documents__did__get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "did",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Did"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/documents/{did}/original": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Original",
+        "operationId": "original_api_v1_caseflow_projects__pid__documents__did__original_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "did",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Did"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/evidence": {
+      "post": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Create Evidence",
+        "operationId": "create_evidence_api_v1_caseflow_projects__pid__evidence_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvidenceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/evidence/resolve-legacy": {
+      "post": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Resolve Legacy",
+        "operationId": "resolve_legacy_api_v1_caseflow_projects__pid__evidence_resolve_legacy_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/evidence/{eid}": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Evidence",
+        "operationId": "evidence_api_v1_caseflow_projects__pid__evidence__eid__get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "eid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Eid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/caseflow/projects": {
       "get": {
         "tags": [
@@ -4602,6 +4904,12 @@
               }
             ],
             "title": "Previous Id"
+          },
+          "source_url": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Source Url",
+            "default": ""
           }
         },
         "type": "object",
@@ -5640,6 +5948,44 @@
           "sha256"
         ],
         "title": "Evidence"
+      },
+      "EvidenceInput": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Snapshot Sha256"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/SourceSegment"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Segments"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 101000,
+            "minLength": 1,
+            "title": "Quote"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "document_id",
+          "snapshot_sha256",
+          "segments",
+          "quote"
+        ],
+        "title": "EvidenceInput"
       },
       "ExternalConsent": {
         "properties": {
@@ -6943,6 +7289,34 @@
           "diagnostics"
         ],
         "title": "LabStatus"
+      },
+      "LegacyInput": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Page"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Quote"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "document_id",
+          "page",
+          "quote"
+        ],
+        "title": "LegacyInput"
       },
       "LineRange": {
         "properties": {
@@ -8451,6 +8825,34 @@
         ],
         "title": "SourceInput"
       },
+      "SourceSegment": {
+        "properties": {
+          "unit_id": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Unit Id"
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Start"
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "End"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "unit_id",
+          "start",
+          "end"
+        ],
+        "title": "SourceSegment"
+      },
       "SpecialistOutput": {
         "properties": {
           "summary": {
@@ -8894,6 +9296,12 @@
               }
             ],
             "title": "Previous Id"
+          },
+          "source_url": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Source Url",
+            "default": ""
           }
         },
         "additionalProperties": false,

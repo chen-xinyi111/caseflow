@@ -9,9 +9,11 @@ from pydantic import BaseModel,ConfigDict,Field
 from opslens import db
 from opslens.diagnostic import model
 from opslens.diagnostic.contracts import ModelSettings
-from . import store,files
+from . import store,files,documents
+from .documents_api import router as documents_router
 
 router=APIRouter(prefix='/api/v1/caseflow',tags=['CaseFlow'])
+router.include_router(documents_router)
 class Strict(BaseModel):model_config=ConfigDict(extra='forbid')
 class Create(Strict):name:str=Field(min_length=1,max_length=100)
 class Revision(Strict):revision:int=Field(ge=1)
@@ -21,6 +23,7 @@ class Text(Revision):
     content:str=Field(min_length=1,max_length=100000)
     role:Literal['requirement','context']='requirement'
     previous_id:UUID|None=None
+    source_url:str=Field(default='',max_length=2000)
 class RequirementEdit(Revision):
     text:str=Field(min_length=1,max_length=3000)
     status:Literal['draft','confirmed','excluded']
@@ -105,12 +108,11 @@ def history(pid:UUID):
         return c.execute('SELECT action,payload,created_at FROM cf_audit WHERE project_id=%s ORDER BY id DESC LIMIT 200',(pid,)).fetchall()
 @router.post('/projects/{pid}/texts')
 def text(pid:UUID,data:Text):
-    return checked(lambda:store.public(store.update(pid,data.revision,'document',lambda s:store.add_document(s,data.name,[data.content],data.role,str(data.previous_id) if data.previous_id else None))))
+    return checked(documents.save,pid,data.revision,data.name,data.content.encode('utf-8'),data.role,data.previous_id,data.source_url,pasted=True)
 @router.post('/projects/{pid}/files')
-async def upload(pid:UUID,file:UploadFile=File(...),revision:int=Form(...),role:Literal['requirement','context']=Form('requirement'),previous_id:UUID|None=Form(None)):
+async def upload(pid:UUID,file:UploadFile=File(...),revision:int=Form(...),role:Literal['requirement','context']=Form('requirement'),previous_id:UUID|None=Form(None),source_url:str=Form('',max_length=2000)):
     raw=await file.read(5*1024*1024+1);name=(file.filename or '资料.txt').replace('\\','/').split('/')[-1]
-    pages,warnings=checked(files.inspect,name,raw)
-    return checked(lambda:store.public(store.update(pid,revision,'document',lambda s:store.add_document(s,name,pages,role,str(previous_id) if previous_id else None,warnings))))
+    return checked(documents.save,pid,revision,name,raw,role,previous_id,source_url)
 @router.post('/projects/{pid}/requirements')
 def manual_requirement(pid:UUID,data:ManualRequirement):
     return checked(lambda:store.public(store.update(pid,data.revision,'manual_requirement',lambda s:store.manual_requirement(s,data.text,str(data.document_id),data.page,data.quote))))

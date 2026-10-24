@@ -43,20 +43,21 @@ def update(pid,revision,action,fn):
         c.execute('INSERT INTO cf_audit(project_id,action,payload) VALUES (%s,%s,%s)',(pid,action,jsonb({'revision':revision+1,'result':result})))
         return get(c,pid)
 
-def add_document(s,name,pages,role='requirement',previous_id=None,warnings=None):
+def add_document(s,name,pages,role='requirement',previous_id=None,warnings=None,*,identity=None,canonical=False):
     if len(s['documents'])>=100:raise ValueError('一个项目最多100份资料')
     if role not in ('requirement','context'):raise ValueError('资料用途无效')
     if previous_id and find(s['documents'],previous_id)['role']!=role:raise ValueError('更新资料用途需要与原资料一致')
-    pages=[clean(p) for p in pages]
+    pages=list(pages) if canonical else [clean(p) for p in pages]
     if not pages or not any(p.strip() for p in pages):raise ValueError('资料没有可提取正文，请提供有效文字内容')
     warnings=list(dict.fromkeys(warnings or []))
     for i,p in enumerate(pages):
         if not p.strip() and not any(w.startswith(f'第{i+1}页') for w in warnings):warnings.append(f'第{i+1}页没有可提取正文，请核对该页资料。')
-    existing=next((d for d in s['documents'] if d['name']==name and d['sha256']==digest(pages) and d['role']==role and d['previous_id']==previous_id),None)
+    existing=next((d for d in s['documents'] if d['name']==name and d['sha256']==digest(pages) and d['role']==role and d['previous_id']==previous_id and (identity is None or all(d.get(k)==v for k,v in identity.items()))),None)
     if existing:
         existing['warnings']=list(dict.fromkeys([*existing.get('warnings',[]),*warnings]))
         return {'document_id':existing['id'],'reused':True}
     row={'id':uid(),'name':clean(name)[:200],'pages':pages,'warnings':warnings,'role':role,'previous_id':previous_id,'sha256':digest(pages),'created_at':now(),'kb_document_id':None}
+    if identity:row.update(identity)
     s['documents'].append(row);return {'document_id':row['id']}
 
 def quote_valid(s,citation,allowed=None):
