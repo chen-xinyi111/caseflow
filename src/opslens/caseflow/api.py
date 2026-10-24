@@ -11,11 +11,14 @@ from opslens.diagnostic import model
 from opslens.diagnostic.contracts import ModelSettings
 from . import store,files,documents
 from .documents_api import router as documents_router
+from .staged_api import router as staged_router
 
 router=APIRouter(prefix='/api/v1/caseflow',tags=['CaseFlow'])
 router.include_router(documents_router)
 class Strict(BaseModel):model_config=ConfigDict(extra='forbid')
-class Create(Strict):name:str=Field(min_length=1,max_length=100)
+class Create(Strict):
+    name:str=Field(min_length=1,max_length=100)
+    workflow_mode:Literal['standard','strict']='standard'
 class Revision(Strict):revision:int=Field(ge=1)
 class Archive(Revision):archived:bool
 class Text(Revision):
@@ -52,7 +55,10 @@ class Change(Revision):
     target_ids:list[UUID]=Field(default_factory=list,max_length=10)
 class ClarificationInput(Revision):
     question:str=Field(min_length=1,max_length=1000)
-    requirement_ids:list[UUID]=Field(min_length=1,max_length=20)
+    requirement_ids:list[UUID]=Field(default_factory=list,max_length=20)
+    point_ids:list[UUID]=Field(default_factory=list,max_length=100)
+    basis_bundle_id:UUID|None=None
+    basis_item_ids:list[UUID]=Field(default_factory=list,max_length=30)
     kind:Literal['ambiguity','conflict']='ambiguity'
 class ClarificationAnswer(Revision):answer:str=Field(min_length=1,max_length=3000)
 class TaskInput(Revision):
@@ -93,7 +99,7 @@ def projects():
     with db.connect() as c:
         return [{k:p[k] for k in ('id','name','revision','updated_at')}|{'summary':store.summary(p['state']),'archived':bool(p['state'].get('archived',False))} for p in c.execute('SELECT * FROM cf_projects ORDER BY updated_at DESC').fetchall()]
 @router.post('/projects',status_code=201)
-def create(data:Create):return checked(lambda:store.public(store.create(data.name)))
+def create(data:Create):return checked(lambda:store.public(store.create(data.name,data.workflow_mode)))
 @router.get('/projects/{pid}')
 def project(pid:UUID):
     with db.connect() as c:return checked(lambda:store.public(store.get(c,pid)))
@@ -125,7 +131,20 @@ def case(pid:UUID,cid:UUID,data:CaseEdit):
     return checked(lambda:store.public(store.update(pid,data.revision,'case_review',lambda s:store.edit_case(s,str(cid),copy.deepcopy(values)))))
 @router.post('/projects/{pid}/clarifications')
 def clarify(pid:UUID,data:ClarificationInput):
-    return checked(lambda:store.public(store.update(pid,data.revision,'clarification',lambda s:store.add_clarification(s,data.question,[str(i) for i in data.requirement_ids],data.kind))))
+    def add(s):
+        if not data.point_ids and not data.basis_bundle_id and not data.basis_item_ids:
+            return store.add_clarification(s,data.question,[str(i) for i in data.requirement_ids],data.kind)
+        from . import points
+        for rid in data.requirement_ids:store.find(s['requirements'],rid)
+        for tid in data.point_ids:store.find(s.get('test_points',[]),tid)
+        if data.basis_bundle_id:
+            b=store.find(s.get('basis_bundles',[]),data.basis_bundle_id)
+            for iid in data.basis_item_ids:store.find(b['items'],iid)
+        elif data.basis_item_ids:raise ValueError('包项需指定准备包')
+        if not (data.requirement_ids or data.point_ids or data.basis_item_ids):raise ValueError('问题必须关联规则、包项或测试点')
+        return {'clarification_id':points.question(s,data.question,requirement_ids=[str(i) for i in data.requirement_ids],point_ids=[str(i) for i in data.point_ids],
+            bundle_id=str(data.basis_bundle_id) if data.basis_bundle_id else None,item_ids=[str(i) for i in data.basis_item_ids],kind=data.kind)}
+    return checked(lambda:store.public(store.update(pid,data.revision,'clarification',add)))
 @router.post('/projects/{pid}/clarifications/{cid}')
 def clarify_answer(pid:UUID,cid:UUID,data:ClarificationAnswer):
     return checked(lambda:store.public(store.update(pid,data.revision,'clarification_answer',lambda s:store.resolve_clarification(s,str(cid),data.answer))))
@@ -167,12 +186,15 @@ def task(tid:UUID):
 def resume(tid:UUID,data:Revision):
     with db.connect() as c:
         t=checked(store.task,c,tid);p=checked(store.get,c,t['project_id'],True)
+        if t['input'].get('group_id'):raise HTTPException(409,'请从任务组继续，不单独重发组内叶任务')
         from .agent import processing_signature
         if t['status'] not in ('failed','blocked'):raise HTTPException(409,'任务当前不能继续')
         if p['revision']!=data.revision or p['revision']!=t['input']['revision'] or str(model.config(c)['id'])!=t['input']['config_id'] or t['input'].get('processing_signature')!=processing_signature():raise HTTPException(409,'资料、模型或索引规则已变化，保存结果仅供查看，请重新确认处理范围')
         unknown=c.execute("SELECT 1 FROM durable_operations WHERE family='caseflow' AND task_id=%s AND status='issued' AND paid",(tid,)).fetchone()
         if unknown:raise HTTPException(409,'存在结果未知的外部调用，不能自动重发；已保存步骤可查看')
         if c.execute("SELECT 1 FROM cf_tasks WHERE project_id=%s AND status IN ('queued','running')",(p['id'],)).fetchone():raise HTTPException(409,'项目已有处理任务')
+        from . import groups
+        checked(groups.ensure_idle,c,p['id'])
         c.execute("UPDATE cf_tasks SET status='queued',error=NULL,finished_at=NULL WHERE id=%s",(tid,))
         return store.task(c,tid)
 @router.get('/tasks/{tid}/events')
@@ -246,7 +268,7 @@ EXAMPLES={
  'registration':('活动报名', '活动报名仅向已登录用户开放。\n每名用户对同一活动只能报名一次。\n活动报名人数不能超过设置的名额。\n报名截止后不允许新增报名。\n未说明：退出报名是否立即释放名额。')}
 @router.post('/examples/{key}',status_code=201)
 def example(key:Literal['reservation','permission','registration']):
-    name,text=EXAMPLES[key];p=store.create(name+' · 示例')
+    name,text=EXAMPLES[key];p=store.create(name+' · 示例','strict')
     def seed(s):
         store.add_document(s,name+'需求说明',[text]);did=s['documents'][0]['id'];s['example']=True
         for line in text.splitlines():
@@ -268,3 +290,6 @@ def example(key:Literal['reservation','permission','registration']):
         for r in s['requirements']:r['status']='draft'
         return {'example':key,'note':'人工预置示例，不是真实模型结果'}
     return store.public(store.update(p['id'],p['revision'],'example',seed))
+
+
+router.include_router(staged_router)

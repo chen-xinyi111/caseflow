@@ -39,6 +39,9 @@ def main():
         for table in ['investigations', 'kb_tasks', 'collections', 'cf_tasks']:
             if c.execute(sql.SQL("SELECT count(*) AS n FROM {} WHERE status IN ('queued','running')").format(sql.Identifier(table))).fetchone()['n']:
                 raise RuntimeError('Wait for active tasks before taking a release backup')
+        if c.execute("SELECT to_regclass('cf_task_groups') AS t").fetchone()['t']:
+            if c.execute("SELECT 1 FROM cf_task_groups WHERE status IN ('queued','running') LIMIT 1").fetchone():
+                raise RuntimeError('Wait for active CaseFlow task groups before taking a release backup')
         if c.execute("SELECT count(*) AS n FROM recovery_plans WHERE status IN ('approved','executing','verifying')").fetchone()['n']:
             raise RuntimeError('Wait for active recovery before taking a release backup')
     if args.check_active:

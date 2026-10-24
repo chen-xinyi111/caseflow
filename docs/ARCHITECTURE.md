@@ -52,3 +52,14 @@ Runtime通过租约续约、执行批次和保存点控制任务。外部请求�
 前端KnowledgeLibrary与DocumentReader通过项目级接口阅读；hash路由绑定项目/文档/证据，刷新由根页面恢复。规范文本用Vue文本节点和mark高亮，PDF原件使用浏览器iframe；不实现PDF像素坐标覆盖。索引投影从冻结快照逐页切块，保留page/start/end；不会把展平TXT的位置猜回PDF。投影TXT只属于内部KB，不作用户原件。索引身份包含版本、参数和检索模式，始终使用显式成员及映射；上传、阅读、定位和迁移均不调用模型。
 
 数据库约束、迁移与含bytea备份恢复已在独立PostgreSQL/pgvector中补验；用户库尚未执行升级迁移。首次受阻记录见[第三阶段初次记录](upgrade/20261024-stage3-sources/02_验证记录.md)，最新证据见[数据库恢复后补验](upgrade/20261024-stage3-sources/04_数据库恢复后补验.md)。
+
+
+## 第四阶段：依据包、测试点与任务组
+
+`staged_api.py`提供workflow、task-groups、basis-bundles与test-points接口；`staged_contracts.py`限定结构和修订。`preparation.py`显式编排全文分段、检索回读、不可变包合并及测试点草稿/模型意见。`points.py`集中维护资格、依赖指纹、问题映射、修订和原子批量评审。
+
+`groups.py`新增cf_task_groups，顺序派发真实cf_tasks叶任务；CaseFlow worker和Runtime继续负责租约、保存点及请求账本。每叶成功的业务结果、项目修订、组item结果ID/标记、cf_tasks completed和finished事件同事务提交，组自己的expected_project_revision一起推进；其他操作改项目或模型配置/处理签名则停止。恢复不重置租约fencing批次，不另发未知外部请求。已知格式失败可以保留其他成功批次，预算或未知用量停止派发。
+
+规则草稿、业务问题、来源继承与人工编辑均不被模型覆盖。包内容是项目JSONB追加值，接口不原地编辑；当前资格从规则绑定、采用的包项/证据、当前问题、来源后继及数值规则派生。旧缺字段项目读取strict，不在GET补写。原文和SQL证据继续使用第三阶段的不可变侧表。备份窗口额外检查queued/running组，包含叶任务之间的空隙。
+
+前端BasisPreparation、TestPointReview、GroupTasks复用原文阅读器。任务进度跟随当前叶SSE，轮询组作为最终状态；pending request_id精确查找不受最近50条限制，未知提交不会自动换ID。用例到测试点的完整链路仍属第五阶段。

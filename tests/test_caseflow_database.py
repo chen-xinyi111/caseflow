@@ -70,7 +70,7 @@ class ControlledProvider:
         return self.rt.operation(key,response,paid=True)
 
 def project(client):
-    p=client.post('/api/v1/caseflow/projects',json={'name':'隔离流程检查'}).json()
+    p=client.post('/api/v1/caseflow/projects',json={'name':'隔离流程检查','workflow_mode':'strict'}).json()
     p=client.post('/api/v1/caseflow/projects/'+p['id']+'/texts',json={'revision':p['revision'],'name':'预约需求','content':'预约时长为30至120分钟。'}).json()
     return p
 def task_body(p,kind):return {'revision':p['revision'],'request_id':str(uuid4()),'kind':kind,'document_ids':[d['id'] for d in p['state']['documents']],'requirement_ids':[r['id'] for r in p['state']['requirements'] if r['status']=='confirmed'],'consent':True}
@@ -351,7 +351,9 @@ def test_execution_import_binds_revision_and_preserves_all_or_nothing(client,mon
     monkeypatch.setattr(agent,'Provider',ControlledProvider);p=project(client);url='/api/v1/caseflow/projects/'+p['id']
     client.post(url+'/tasks',json=task_body(p,'extract'));agent.process(durability.claim('caseflow'));p=client.get(url).json();r=p['state']['requirements'][0]
     p=client.post(url+'/requirements/'+r['id'],json={'revision':p['revision'],'text':r['text'],'status':'confirmed'}).json()
-    client.post(url+'/tasks',json=task_body(p,'generate'));agent.process(durability.claim('caseflow'));p=client.get(url).json();case=p['state']['cases'][0]
+    client.post(url+'/tasks',json=task_body(p,'generate'));agent.process(durability.claim('caseflow'))
+    response=client.get(url);assert response.status_code==200,response.text
+    p=response.json();case=p['state']['cases'][0]
     p=client.post(url+'/cases/'+case['id'],json={'revision':p['revision'],'status':'approved','review_note':'导入链路检查'}).json()
     raw=files.xlsx(files.RESULT_HEADERS,[[case['code'],1,'未执行','旧规则批次']])
     template=client.get(url+'/result-template');assert template.status_code==200 and template.content.startswith(b'PK')

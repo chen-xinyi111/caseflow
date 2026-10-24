@@ -77,6 +77,11 @@ class Provider:
     def call(self,key,fn):
         def send():
             with db.connect() as c:
+                task = store.task(c,self.rt.id)
+                if task['input'].get('group_id'):
+                    from . import groups
+                    project = store.get(c,task['project_id'])
+                    groups.guard(c,project,groups.get(c,project['id'],task['input']['group_id']))
                 if str(configuration.config(c)['id'])!=str(self.cfg['id']):raise ModelBlocked('模型配置已变化，请重新确认任务')
                 c.execute('SELECT pg_advisory_xact_lock(5011)')
                 used=configuration.used(c)+c.execute("SELECT count(*) n FROM cf_requests WHERE created_at>="+configuration.DAY).fetchone()['n']
@@ -293,6 +298,9 @@ def extract(task,s,provider,rt,max_output=2048):
     return output
 
 def process(task):
+    if task['input'].get('group_id'):
+        from .preparation import process as process_group_leaf
+        return process_group_leaf(task)
     rt=Runtime('caseflow',task)
     try:
         with rt.live():
@@ -319,6 +327,8 @@ def process(task):
                 current=store.get(c,task['project_id'],True)
                 if current['revision']!=task['input']['revision'] or str(configuration.config(c)['id'])!=task['input']['config_id'] or task['input'].get('processing_signature')!=processing_signature():raise ModelBlocked('处理期间资料、模型或索引规则已更新，结果未覆盖已有内容')
                 fn(current['state'])
+                from .points import invalidate as invalidate_points
+                invalidate_points(current['state'])
                 c.execute('UPDATE cf_projects SET state=%s,revision=revision+1,updated_at=now() WHERE id=%s',(jsonb(current['state']),task['project_id']))
                 c.execute('INSERT INTO cf_audit(project_id,action,payload) VALUES (%s,%s,%s)',(task['project_id'],kind,jsonb({'task_id':str(task['id']),'prompt':PROMPT_VERSION})))
             message='处理完成，请审核结果'
@@ -338,6 +348,8 @@ def process(task):
 async def worker():
     while True:
         try:
+            from .groups import schedule
+            await asyncio.to_thread(schedule)
             task=await asyncio.to_thread(durability.claim,'caseflow')
             if task:await asyncio.to_thread(process,task)
             else:await asyncio.sleep(.5)

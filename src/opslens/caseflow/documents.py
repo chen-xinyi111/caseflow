@@ -141,6 +141,8 @@ def save(pid, revision, name, raw, role='requirement', previous_id=None, url='',
         value = identity | {'project_id': p['id'], 'document_id': result['document_id'],
                             'original_bytes': raw, 'snapshot': snapshot}
         _insert_version(c, value)
+        from .points import invalidate
+        invalidate(state)
         c.execute('UPDATE cf_projects SET state=%s,revision=revision+1,updated_at=now() WHERE id=%s',
                   (store.jsonb(state), pid))
         c.execute('INSERT INTO cf_audit(project_id,action,payload) VALUES (%s,%s,%s)',

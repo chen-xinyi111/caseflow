@@ -50,3 +50,13 @@ CREATE TRIGGER cf_version_immutable BEFORE UPDATE OR DELETE ON cf_document_versi
 DROP TRIGGER IF EXISTS cf_evidence_immutable ON cf_evidence;
 CREATE TRIGGER cf_evidence_immutable BEFORE UPDATE OR DELETE ON cf_evidence
  FOR EACH ROW EXECUTE FUNCTION cf_immutable_source();
+
+CREATE TABLE IF NOT EXISTS cf_task_groups (
+ id uuid PRIMARY KEY, project_id uuid NOT NULL REFERENCES cf_projects(id), request_id uuid NOT NULL UNIQUE,
+ kind text NOT NULL CHECK(kind IN ('prepare_basis','extract_points')), input jsonb NOT NULL, input_digest text NOT NULL,
+ expected_project_revision integer NOT NULL, config_id uuid NOT NULL, processing_signature text NOT NULL,
+ items jsonb NOT NULL, status text NOT NULL DEFAULT 'queued'
+ CHECK(status IN ('queued','running','completed','partial','blocked','failed','stale')),
+ error text, created_at timestamptz NOT NULL DEFAULT now(), finished_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS cf_group_project ON cf_task_groups(project_id,created_at);

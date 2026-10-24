@@ -25,10 +25,12 @@ def find(items,i):
     value=next((v for v in items if v['id']==str(i)),None)
     if value is None:raise LookupError('记录不属于当前项目')
     return value
-def create(name):
+def create(name,workflow_mode='standard'):
     name=clean(name).strip()
     if not name or len(name)>100:raise ValueError('项目名称需要1至100字')
-    with db.connect() as c:return c.execute('INSERT INTO cf_projects(id,name,state) VALUES (%s,%s,%s) RETURNING *',(uuid4(),name,jsonb(empty()))).fetchone()
+    if workflow_mode not in ('standard','strict'):raise ValueError('项目流程无效')
+    state=empty()|{'schema_version':2,'workflow_mode':workflow_mode,'basis_bundles':[],'test_points':[],'point_reviews':[]}
+    with db.connect() as c:return c.execute('INSERT INTO cf_projects(id,name,state) VALUES (%s,%s,%s) RETURNING *',(uuid4(),name,jsonb(state))).fetchone()
 
 def set_archived(s,archived):
     # Hiding a project never changes its documents, reviews, runs or task results.
@@ -38,7 +40,10 @@ def update(pid,revision,action,fn):
     with db.connect() as c:
         p=get(c,pid,True)
         if p['revision']!=revision:raise FileExistsError('资料已被更新，请刷新后再操作；你的输入尚未覆盖已有内容')
+        if p['state'].get('archived') and action!='archive':raise FileExistsError('归档项目只读，请先恢复')
         s=copy.deepcopy(p['state']);result=fn(s)
+        from .points import invalidate as invalidate_points
+        invalidate_points(s)
         c.execute('UPDATE cf_projects SET state=%s,revision=revision+1,updated_at=now() WHERE id=%s',(jsonb(s),pid))
         c.execute('INSERT INTO cf_audit(project_id,action,payload) VALUES (%s,%s,%s)',(pid,action,jsonb({'revision':revision+1,'result':result})))
         return get(c,pid)
@@ -179,8 +184,9 @@ def decide_change(s,cid,action,target_ids):
     elif action=='replace':
         r=find(s['requirements'],target_ids[0]);snapshot(s,'requirement',r)
         r.update(text=item['text'],citations=item['citations'],document_id=change['document_id'],questions=item.get('questions',[]))
+        r['revision']+=1;invalidate(s,r['id'])
         if change['kind']!='unchanged':
-            r['revision']+=1;r['status']='draft';r['origin']='explicit';r['answers']=[];invalidate(s,r['id'])
+            r['status']='draft';r['origin']='explicit';r['answers']=[]
     elif action=='remove':
         for rid in target_ids:
             r=find(s['requirements'],rid);snapshot(s,'requirement',r);r['revision']+=1;r['status']='excluded';invalidate(s,rid)
@@ -284,6 +290,10 @@ def summary(s):
 
 def public(p):
     s=copy.deepcopy(p['state']);s['summary']=summary(s)
+    from . import points
+    s.setdefault('workflow_mode','strict');s.setdefault('schema_version',1)
+    s.setdefault('basis_bundles',[]);s.setdefault('point_reviews',[])
+    s['test_points']=[points.present(p['state'],r) for r in p['state'].get('test_points',[])]
     from . import grounding
     for rule in s.get('numeric_rules',[]):rule['current']=grounding.current_rule(s,rule)
     # Compute against stored state: presentation-only 'current' flags are not fingerprint inputs.
@@ -314,6 +324,10 @@ def create_task(pid,revision,request_id,kind,document_ids,requirement_ids,consen
             if str(previous['project_id'])!=str(pid) or previous['kind']!=kind or any(previous['input'].get(k,[] if k=='case_ids' else None)!=v for k,v in expected.items()):raise FileExistsError('请求编号已经用于其他任务')
             return previous
         if p['revision']!=revision:raise FileExistsError('资料已变化，请重新确认')
+        if p['state'].get('archived'):raise FileExistsError('归档项目只读')
+        from . import groups,points
+        groups.ensure_idle(c,pid)
+        if kind=='generate' and points.mode(p['state'])!='strict':raise ValueError('标准流程须通过测试点评审；详细用例展开将在第五阶段提供')
         for i in document_ids:find(p['state']['documents'],i)
         if kind=='review':
             if not 1<=len(case_ids)<=3:raise ValueError('一次检查1至3条已保存用例')
