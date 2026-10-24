@@ -83,6 +83,7 @@ def test_legacy_read_is_nonmutating_and_explicit_migration_is_idempotent(client)
     p,base=new(client)
     p=store.update(p['id'],p['revision'],'legacy_fixture',lambda s:store.add_document(s,'legacy.pdf',['旧文本😀','旧第二段']))
     before=copy.deepcopy(p['state']);did=before['documents'][0]['id']
+    before_response=client.get(base).json()
     info=client.get(base+'/documents/'+did).json()
     assert info['format']=='legacy_text' and not info['original_available']
     assert info['snapshot']['units'][0]['page_number'] is None
@@ -92,7 +93,10 @@ def test_legacy_read_is_nonmutating_and_explicit_migration_is_idempotent(client)
     with db.connect() as c:assert c.execute('SELECT count(*) n FROM cf_document_versions').fetchone()['n']==0
     assert documents.migrate_legacy(p['id'],apply=True)['documents']==1
     assert documents.migrate_legacy(p['id'],apply=True)['documents']==0
-    assert client.get(base).json()['state']==before
+    assert client.get(base).json()==before_response
+    with db.connect() as c:
+        saved=store.get(c,p['id'])
+        assert saved['state']==before and saved['revision']==p['revision']
 
 
 def test_cross_units_and_database_immutability(client):
@@ -137,4 +141,41 @@ def test_keyword_projection_keeps_pages_offsets_and_does_not_use_external_models
         assert [x['page'] for x in chunks]==[1,2]
         for x in chunks:assert p['state']['documents'][0]['pages'][x['page']-1][x['start_char']:x['end_char']]==x['content']
         assert c.execute('SELECT active FROM kb_indexes WHERE id=%s',(first,)).fetchone()['active'] is False
+        assert c.execute('SELECT count(*) n FROM cf_requests').fetchone()['n']==0
+
+
+def test_sidecar_failure_rolls_back_original_project_and_audit(client,monkeypatch):
+    p,base=new(client);insert=documents._insert_version
+    def fail_after_insert(c,value):
+        insert(c,value)
+        raise ValueError('controlled sidecar failure after SQL insert')
+    monkeypatch.setattr(documents,'_insert_version',fail_after_insert)
+    result=client.post(base+'/files',data={'revision':p['revision']},files={'file':('rollback.txt',b'original bytes')})
+    assert result.status_code==400 and 'controlled sidecar failure' in result.json()['detail']
+    assert client.get(base).json()==p
+    with db.connect() as c:
+        assert c.execute('SELECT count(*) n FROM cf_document_versions').fetchone()['n']==0
+        assert c.execute('SELECT count(*) n FROM cf_audit').fetchone()['n']==0
+
+
+def test_actual_index_status_and_project_scoped_search(client):
+    p,base=new(client);p=paste(client,base,p,'预约时长120分钟。');did=p['state']['documents'][0]['id']
+    other,other_base=new(client);paste(client,other_base,other,'另一项目预约时长999分钟。')
+    class Offline:
+        def rag(self):pytest.fail('keyword verification must not call a model')
+    tools=agent.Tools(p['state'],{'input':{'document_ids':[did],'requirement_ids':[]}},Offline())
+    result=tools.run('search_documents',{'query':'预约 时长'})
+    assert result['hits'] and {h['document_id'] for h in result['hits']}=={did}
+    for hit in result['hits']:
+        assert '999' not in hit['text']
+        assert documents.validate_segments(documents.index_snapshot(p['state']['documents'][0]),hit['segments'])
+    pointer={'id':str(tools.index),'document_ids':[did],'mapping':tools.mapping,'mode':'keyword',
+        'projection_version':2,'projection_signature':documents.projection_signature('keyword'),
+        'source_hashes':{did:p['state']['documents'][0]['snapshot_sha256']}}
+    store.update(p['id'],p['revision'],'index_fixture',lambda s:s.update(knowledge_index=pointer))
+    assert client.get(base+'/documents').json()[0]['index_status']=='ready'
+    with db.connect() as c:c.execute("UPDATE kb_indexes SET status='failed',error='controlled index failure' WHERE id=%s",(tools.index,))
+    info=client.get(base+'/documents/'+did).json()
+    assert info['index_status']=='failed' and info['index_error']=='controlled index failure'
+    with db.connect() as c:
         assert c.execute('SELECT count(*) n FROM cf_requests').fetchone()['n']==0

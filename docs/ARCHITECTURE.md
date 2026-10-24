@@ -51,4 +51,4 @@ Runtime通过租约续约、执行批次和保存点控制任务。外部请求�
 
 前端KnowledgeLibrary与DocumentReader通过项目级接口阅读；hash路由绑定项目/文档/证据，刷新由根页面恢复。规范文本用Vue文本节点和mark高亮，PDF原件使用浏览器iframe；不实现PDF像素坐标覆盖。索引投影从冻结快照逐页切块，保留page/start/end；不会把展平TXT的位置猜回PDF。投影TXT只属于内部KB，不作用户原件。索引身份包含版本、参数和检索模式，始终使用显式成员及映射；上传、阅读、定位和迁移均不调用模型。
 
-数据库约束、迁移与含bytea备份恢复仍待真实PostgreSQL验收；本轮证据见[第三阶段记录](upgrade/20261024-stage3-sources/02_验证记录.md)。
+数据库约束、迁移与含bytea备份恢复已在独立PostgreSQL/pgvector中补验；用户库尚未执行升级迁移。首次受阻记录见[第三阶段初次记录](upgrade/20261024-stage3-sources/02_验证记录.md)，最新证据见[数据库恢复后补验](upgrade/20261024-stage3-sources/04_数据库恢复后补验.md)。

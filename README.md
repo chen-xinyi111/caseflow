@@ -48,7 +48,7 @@ cd caseflow
 
 [操作步骤](docs/DEMO.md) · [使用说明](docs/PRODUCT.md) · [部署配置](docs/DEPLOYMENT.md) · [架构](docs/ARCHITECTURE.md) · [验证范围](docs/VALIDATION.md)
 
-2026-10-24第三阶段新增资料与精确溯源实现；离线和受控页面验证已完成，数据库集成、迁移及恢复验收受本机Docker故障阻塞。升级前先阅读[交接与验证范围](docs/upgrade/20261024-stage3-sources/00_交接索引.md)。
+2026-10-24第三阶段新增资料与精确溯源实现；Docker恢复后已完成隔离数据库、迁移及备份恢复补验，后端322项、前端24项通过。用户业务库尚未迁移，升级前先阅读[交接与验证范围](docs/upgrade/20261024-stage3-sources/00_交接索引.md)。
 
 ## 实现与边界
 
