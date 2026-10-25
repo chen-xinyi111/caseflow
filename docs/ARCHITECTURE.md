@@ -42,3 +42,33 @@ Runtime通过租约续约、执行批次和保存点控制任务。外部请求�
 修改建议由服务端记录原用例修订，应用前检查该修订和需求确认状态。复审采用新的需求修订时，即使用例文字未改，也会产生新用例修订。执行记录始终绑定实际的用例快照；旧结果不能转算为新修订通过。页面同步未编辑字段，保留人工输入并提示服务器内容冲突。
 
 当前适合本机单用户；大规模协作需进一步拆分实体表、增加权限与并发设计，不作企业规模承诺。结构及引文检查不能替代业务语义审核。
+
+## 第三阶段：文档版本与位置证据
+
+新增documents/documents_api模块。cf_document_versions追加保存原件bytea及SHA256、规范pages/units快照及摘要、格式和解析签名；现有document_id作为不可变版本身份，previous_id继续形成版本链。cf_evidence绑定项目、版本、快照摘要和有序区间，独立外键及禁止更新/删除触发器保护侧表。业务JSON仍保留旧pages、R/T编号、修订和历史；导入在同一事务中写入原件侧表与业务状态。
+
+区间从0开始、结束不包含，单位为Unicode code point。PDF单元使用真实页号，DOCX保留表格段落标记，MD/TXT为段落，旧未知格式统一legacy_text。GET不填充旧侧表；显式迁移或建立精确证据时才追加旧文本快照，不重新解析。精确证据只证明位置一致；旧page/quote继续保留，重复匹配不自动选择第一处。
+
+前端KnowledgeLibrary与DocumentReader通过项目级接口阅读；hash路由绑定项目/文档/证据，刷新由根页面恢复。规范文本用Vue文本节点和mark高亮，PDF原件使用浏览器iframe；不实现PDF像素坐标覆盖。索引投影从冻结快照逐页切块，保留page/start/end；不会把展平TXT的位置猜回PDF。投影TXT只属于内部KB，不作用户原件。索引身份包含版本、参数和检索模式，始终使用显式成员及映射；上传、阅读、定位和迁移均不调用模型。
+
+数据库约束、迁移与含bytea备份恢复已在独立PostgreSQL/pgvector中补验；用户库尚未执行升级迁移。首次受阻记录见[第三阶段初次记录](upgrade/20261024-stage3-sources/02_验证记录.md)，最新证据见[数据库恢复后补验](upgrade/20261024-stage3-sources/04_数据库恢复后补验.md)。
+
+
+## 第四阶段：依据包、测试点与任务组
+
+`staged_api.py`提供workflow、task-groups、basis-bundles与test-points接口；`staged_contracts.py`限定结构和修订。`preparation.py`显式编排全文分段、检索回读、不可变包合并及测试点草稿/模型意见。`points.py`集中维护资格、依赖指纹、问题映射、修订和原子批量评审。
+
+`groups.py`新增cf_task_groups，顺序派发真实cf_tasks叶任务；CaseFlow worker和Runtime继续负责租约、保存点及请求账本。每叶成功的业务结果、项目修订、组item结果ID/标记、cf_tasks completed和finished事件同事务提交，组自己的expected_project_revision一起推进；其他操作改项目或模型配置/处理签名则停止。恢复不重置租约fencing批次，不另发未知外部请求。已知格式失败可以保留其他成功批次，预算或未知用量停止派发。
+
+规则草稿、业务问题、来源继承与人工编辑均不被模型覆盖。包内容是项目JSONB追加值，接口不原地编辑；当前资格从规则绑定、采用的包项/证据、当前问题、来源后继及数值规则派生。旧缺字段项目读取strict，不在GET补写。原文和SQL证据继续使用第三阶段的不可变侧表。备份窗口额外检查queued/running组，包含叶任务之间的空隙。
+
+前端BasisPreparation、TestPointReview、GroupTasks复用原文阅读器。任务进度跟随当前叶SSE，轮询组作为最终状态；pending request_id精确查找不受最近50条限制，未知提交不会自动换ID。用例到测试点的完整链路见下述第五阶段。
+
+
+## 第五阶段：点约束用例与冻结追溯
+
+case_expansion.py按一个TP一个expand_points叶编排有界LangGraph，父组为expand_cases，输入冻结id/revision/fingerprint。case_trace.py集中执行准入、完整采用快照、实体并发检查、人工批准、失效和建议应用。每批最多3条，最多5次设计、8次工具、一次格式修正和一次语义复核；超32KiB不能静默删依据。已通过TP不把draft R伪装成confirmed R；strict原路径保持。
+
+生成与复核使用同一TP的精确证据、所选包项、R、明确回答和适用数值规则。额外检索只返回未采用线索。业务结果、组叶状态、任务、事件和项目预期修订沿用同一atomic_commit事务；复核未知/预算阻塞可保存有效草稿后停组，未知账本不允许继续或替代请求。已完成响应和叶不重复。
+
+新T冻结TP修订/指纹、包项/证据、R修订、来源版本和trace_snapshot；不同TP同标题不去重。修改建议冻结目标T修订及内容指纹，后续人工编辑不能被覆盖。内容或仅绑定改变也增加T修订；旧执行snapshot不会成为新版通过。缺协议的旧T只读派生legacy_direct，无业务迁移。case_export.py以冻结证据产生追溯列及本地链接；GET cases/{cid}/trace受项目隔离。

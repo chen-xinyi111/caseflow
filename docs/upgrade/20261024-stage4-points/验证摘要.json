@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-24",
+  "baseline": "231f3c34acc1dfe0984f0d25dc6ea98e29124aa4",
+  "branch": "feat/caseflow-staged-upgrade",
+  "backend": {
+    "tests": 352,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 146.7,
+    "stage4_sql_cases_included": 30,
+    "excluded_files": [
+      "tests/test_integration.py"
+    ],
+    "non_loopback_attempts": 0,
+    "warning": "anyio already imported; pytest assertion rewrite warning"
+  },
+  "frontend": {
+    "tests": 28,
+    "failures": 0,
+    "openapi_types_synced": true,
+    "typecheck": true,
+    "production_build": true,
+    "modules": 41
+  },
+  "page_evidence": {
+    "actual_api_and_sql": true,
+    "provider": "in_process_controlled_responses",
+    "live_model_calls": 0,
+    "prepared_leaf_tasks": 7,
+    "extract_leaf_tasks": 1,
+    "initial_generated_points": 2,
+    "manual_points": 1,
+    "final_point_review_records": 2,
+    "rules_remain_draft": true,
+    "viewport_390_no_horizontal_overflow": true,
+    "concurrent_draft_preserved": true
+  },
+  "backup_restore": {
+    "tables": 46,
+    "fingerprints_equal": true,
+    "unknown_ledger_rows": 2,
+    "ledger_rows_are_controlled_local_exceptions": true
+  },
+  "legacy_migration": {
+    "before_tables": 41,
+    "after_tables": 42,
+    "existing_table_fingerprints_unchanged": true,
+    "old_projects_strict": 3
+  },
+  "protected_files_sha256_unchanged": 16,
+  "stage1_to_stage3_documents_unchanged": true,
+  "feishu_updated": false,
+  "user_database_migrated": false,
+  "user_model_settings_changed": false,
+  "github_pushed": false,
+  "limitations": [
+    "no live model quality or embedding/reranking service verification",
+    "no user database deployment or production stop/backup",
+    "inherited intermittent parallel-investigation test root cause not established; final full run passes",
+    "stage5 detailed cases and exports not implemented"
+  ]
+}

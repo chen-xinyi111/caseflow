@@ -1,0 +1,184 @@
+{
+  "date": "2026-10-24T08:33:05.924051+00:00",
+  "data_kind": "synthetic_only",
+  "source_database": "caseflow_stage3",
+  "restored_database": "caseflow_stage3_restore_20261024_083302",
+  "tables": 41,
+  "all_table_fingerprints_equal": true,
+  "document_versions": 7,
+  "original_bytea_versions": 6,
+  "evidence_links_roundtripped": 3,
+  "snapshot_and_original_hashes_valid": true,
+  "legacy_original_missing_preserved": true,
+  "immutable_triggers_rejected_update_delete": true,
+  "project_version_foreign_key_rejected_mismatch": true,
+  "model_request_rows": 0,
+  "backup_bytes": 89234,
+  "backup_sha256": "c703433ee8bc8644660cd654bdbfc37bf56739892516c3224401d58d08e4fa92",
+  "table_fingerprints": {
+    "cf_audit": {
+      "count": 9,
+      "sha256": "a6e716b8772e2209afa29ed18f79232c014cc27a39f75d06262e7a9eebc7f932"
+    },
+    "cf_document_versions": {
+      "count": 7,
+      "sha256": "911d059fba80b081aa7f4525ccb187130b04824c702584583f3baf58b4ca7940"
+    },
+    "cf_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cf_evidence": {
+      "count": 3,
+      "sha256": "5f8d92402ec44b7b4f7c529e087332ea9211406f2a9b0e1f819f2d799d3de27e"
+    },
+    "cf_projects": {
+      "count": 3,
+      "sha256": "4df4dfcbbff601f8ed614eb3eb7e5af6937641611128ed64e53a22ac670afd43"
+    },
+    "cf_requests": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cf_tasks": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collection_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collections": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_configs": {
+      "count": 1,
+      "sha256": "65432df6ad2829c06ffc99b7763388dc3a9da0647f3c7b39ca5e13c41908e2b4"
+    },
+    "diagnostic_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_feedback": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_previews": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_requests": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_sessions": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_sources": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_turns": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "durable_operations": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "durable_tasks": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evaluation_calls": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evaluation_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evaluation_items": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evaluation_reviews": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evaluation_runs": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evaluation_snapshots": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evidence": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fault_cases": {
+      "count": 6,
+      "sha256": "b25566a09583943d24bc149e8996f5714acb7ee06b45867a354ce3ffe15117fe"
+    },
+    "investigation_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "investigation_steps": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "investigations": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kb_chunks": {
+      "count": 5,
+      "sha256": "12f003b1f419eb6edc3677dfd8d204951f8d63a68e34c1b3fee94d682ac6eea4"
+    },
+    "kb_documents": {
+      "count": 5,
+      "sha256": "3cd010c657f8792fef45eedc51603f9c804c63e7071f7cc6c117c85fc82cd5e9"
+    },
+    "kb_embeddings": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kb_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kb_index_chunks": {
+      "count": 5,
+      "sha256": "469c78b8af821b25ab213c3a4358e365bfc2a6040d656fe3dcde4da7471eee42"
+    },
+    "kb_indexes": {
+      "count": 1,
+      "sha256": "867bfaa6071569e5b857dfa45c42de757f7103f3b1f096616021869474eeb756"
+    },
+    "kb_model_calls": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kb_tasks": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "recovery_actions": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "recovery_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "recovery_plans": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
+}

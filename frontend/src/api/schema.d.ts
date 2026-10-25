@@ -4,6 +4,108 @@
  */
 
 export interface paths {
+    "/api/v1/caseflow/projects/{pid}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listing */
+        get: operations["listing_api_v1_caseflow_projects__pid__documents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/documents/{did}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detail */
+        get: operations["detail_api_v1_caseflow_projects__pid__documents__did__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/documents/{did}/original": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Original */
+        get: operations["original_api_v1_caseflow_projects__pid__documents__did__original_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Evidence */
+        post: operations["create_evidence_api_v1_caseflow_projects__pid__evidence_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/evidence/resolve-legacy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve Legacy */
+        post: operations["resolve_legacy_api_v1_caseflow_projects__pid__evidence_resolve_legacy_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/evidence/{eid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Evidence */
+        get: operations["evidence_api_v1_caseflow_projects__pid__evidence__eid__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/caseflow/projects": {
         parameters: {
             query?: never;
@@ -460,6 +562,178 @@ export interface paths {
         put?: never;
         /** Example */
         post: operations["example_api_v1_caseflow_examples__key__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/workflow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Workflow */
+        post: operations["workflow_api_v1_caseflow_projects__pid__workflow_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/task-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Group List */
+        get: operations["group_list_api_v1_caseflow_projects__pid__task_groups_get"];
+        put?: never;
+        /** Create Group */
+        post: operations["create_group_api_v1_caseflow_projects__pid__task_groups_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/task-groups/{gid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Group Detail */
+        get: operations["group_detail_api_v1_caseflow_projects__pid__task_groups__gid__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/task-groups/{gid}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Group */
+        post: operations["resume_group_api_v1_caseflow_projects__pid__task_groups__gid__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/basis-bundles/{bid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Bundle Detail */
+        get: operations["bundle_detail_api_v1_caseflow_projects__pid__basis_bundles__bid__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/test-points": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Point List */
+        get: operations["point_list_api_v1_caseflow_projects__pid__test_points_get"];
+        put?: never;
+        /** Add Point */
+        post: operations["add_point_api_v1_caseflow_projects__pid__test_points_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/test-points/{tid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Edit Point */
+        post: operations["edit_point_api_v1_caseflow_projects__pid__test_points__tid__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/test-point-reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Review Points */
+        post: operations["review_points_api_v1_caseflow_projects__pid__test_point_reviews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/basis-bundles/{bid}/rule-evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bind Rule Evidence */
+        post: operations["bind_rule_evidence_api_v1_caseflow_projects__pid__basis_bundles__bid__rule_evidence_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caseflow/projects/{pid}/cases/{cid}/trace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Case Trace Detail */
+        get: operations["case_trace_detail_api_v1_caseflow_projects__pid__cases__cid__trace_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1559,6 +1833,8 @@ export interface components {
              * @default false
              */
             acknowledge_grounding: boolean;
+            /** Items */
+            items?: components["schemas"]["CaseSelection"][];
         };
         /** Body_files_api_v1_diagnostic_sessions__sid__files_post */
         Body_files_api_v1_diagnostic_sessions__sid__files_post: {
@@ -1603,6 +1879,11 @@ export interface components {
             role: "requirement" | "context";
             /** Previous Id */
             previous_id?: string | null;
+            /**
+             * Source Url
+             * @default
+             */
+            source_url: string;
         };
         /** Body_upload_api_v1_kb_documents_post */
         Body_upload_api_v1_kb_documents_post: {
@@ -1635,6 +1916,10 @@ export interface components {
         CaseEdit: {
             /** Revision */
             revision: number;
+            /** Case Revision */
+            case_revision?: number | null;
+            /** Binding Fingerprint */
+            binding_fingerprint?: string | null;
             /** Title */
             title?: string | null;
             /** Preconditions */
@@ -1657,6 +1942,51 @@ export interface components {
              * @default false
              */
             acknowledge_grounding: boolean;
+            point_binding?: components["schemas"]["PointBinding"] | null;
+            /** Reviewed Fields */
+            reviewed_fields?: ("preconditions" | "data" | "steps" | "expected")[] | null;
+            /** Semantic Resolution */
+            semantic_resolution?: string | null;
+            /** Evidence Ids */
+            evidence_ids?: string[] | null;
+            numeric_input?: components["schemas"]["NumericInput"] | null;
+            /** Recalculate */
+            recalculate?: boolean | null;
+        };
+        /** CaseOperation */
+        CaseOperation: {
+            /** Revision */
+            revision: number;
+            /** Case Revision */
+            case_revision?: number | null;
+            /** Binding Fingerprint */
+            binding_fingerprint?: string | null;
+        };
+        /** CaseSelection */
+        CaseSelection: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Case Revision */
+            case_revision: number;
+            /** Binding Fingerprint */
+            binding_fingerprint: string;
+            /**
+             * Acknowledge Grounding
+             * @default false
+             */
+            acknowledge_grounding: boolean;
+            /** Reviewed Fields */
+            reviewed_fields?: ("preconditions" | "data" | "steps" | "expected")[];
+            /**
+             * Semantic Resolution
+             * @default
+             */
+            semantic_resolution: string;
+            /** Evidence Ids */
+            evidence_ids?: string[];
         };
         /** Cause */
         Cause: {
@@ -1752,7 +2082,13 @@ export interface components {
             /** Question */
             question: string;
             /** Requirement Ids */
-            requirement_ids: string[];
+            requirement_ids?: string[];
+            /** Point Ids */
+            point_ids?: string[];
+            /** Basis Bundle Id */
+            basis_bundle_id?: string | null;
+            /** Basis Item Ids */
+            basis_item_ids?: string[];
             /**
              * Kind
              * @default ambiguity
@@ -1845,6 +2181,12 @@ export interface components {
         Create: {
             /** Name */
             name: string;
+            /**
+             * Workflow Mode
+             * @default standard
+             * @enum {string}
+             */
+            workflow_mode: "standard" | "strict";
         };
         /** Demo */
         Demo: {
@@ -2010,6 +2352,20 @@ export interface components {
             content: string;
             /** Sha256 */
             sha256: string;
+        };
+        /** EvidenceInput */
+        EvidenceInput: {
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /** Snapshot Sha256 */
+            snapshot_sha256: string;
+            /** Segments */
+            segments: components["schemas"]["SourceSegment"][];
+            /** Quote */
+            quote: string;
         };
         /** ExternalConsent */
         ExternalConsent: {
@@ -2226,6 +2582,36 @@ export interface components {
             statement: string;
             /** References */
             references: components["schemas"]["Quote"][];
+        };
+        /** GroupInput */
+        GroupInput: {
+            /** Revision */
+            revision: number;
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "prepare_basis" | "extract_points" | "expand_cases";
+            /** Consent */
+            consent: boolean;
+            /**
+             * Target
+             * @default
+             */
+            target: string;
+            /** Document Ids */
+            document_ids?: string[];
+            /** Rule Ids */
+            rule_ids?: string[];
+            /** Basis Bundle Id */
+            basis_bundle_id?: string | null;
+            /** Point Bindings */
+            point_bindings?: components["schemas"]["PointBinding"][];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -2506,6 +2892,18 @@ export interface components {
             /** Collection Error */
             collection_error?: string | null;
         };
+        /** LegacyInput */
+        LegacyInput: {
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /** Page */
+            page: number;
+            /** Quote */
+            quote: string;
+        };
         /** LineRange */
         LineRange: {
             /**
@@ -2591,6 +2989,13 @@ export interface components {
             max_output: number;
             /** Official Hosts */
             official_hosts?: string[];
+        };
+        /** NumericInput */
+        NumericInput: {
+            /** Rule Id */
+            rule_id: string;
+            /** Value */
+            value: string;
         };
         /** NumericRule */
         NumericRule: {
@@ -2745,6 +3150,137 @@ export interface components {
             expires_at: string;
             /** Finished At */
             finished_at?: string | null;
+        };
+        /** PointBinding */
+        PointBinding: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Revision */
+            revision: number;
+            /** Fingerprint */
+            fingerprint: string;
+        };
+        /** PointEdit */
+        PointEdit: {
+            /** Intent */
+            intent: string;
+            /**
+             * Group
+             * @default 未分组
+             */
+            group: string;
+            /** Types */
+            types?: ("正常" | "异常" | "边界" | "权限" | "状态" | "界面" | "接口" | "性能" | "安全")[];
+            /**
+             * Module
+             * @default 未分组
+             */
+            module: string;
+            /** Tags */
+            tags?: string[];
+            /**
+             * Priority
+             * @default P2
+             * @enum {string}
+             */
+            priority: "P1" | "P2" | "P3";
+            /** Rule Ids */
+            rule_ids?: string[];
+            /** Basis Item Ids */
+            basis_item_ids?: string[];
+            /** Evidence Ids */
+            evidence_ids?: string[];
+            /** Questions */
+            questions?: string[];
+            /** Revision */
+            revision: number;
+            /**
+             * Basis Bundle Id
+             * Format: uuid
+             */
+            basis_bundle_id: string;
+            /** Point Revision */
+            point_revision: number;
+            /** Dependency Fingerprint */
+            dependency_fingerprint: string;
+        };
+        /** PointInput */
+        PointInput: {
+            /** Intent */
+            intent: string;
+            /**
+             * Group
+             * @default 未分组
+             */
+            group: string;
+            /** Types */
+            types?: ("正常" | "异常" | "边界" | "权限" | "状态" | "界面" | "接口" | "性能" | "安全")[];
+            /**
+             * Module
+             * @default 未分组
+             */
+            module: string;
+            /** Tags */
+            tags?: string[];
+            /**
+             * Priority
+             * @default P2
+             * @enum {string}
+             */
+            priority: "P1" | "P2" | "P3";
+            /** Rule Ids */
+            rule_ids?: string[];
+            /** Basis Item Ids */
+            basis_item_ids?: string[];
+            /** Evidence Ids */
+            evidence_ids?: string[];
+            /** Questions */
+            questions?: string[];
+            /** Revision */
+            revision: number;
+            /**
+             * Basis Bundle Id
+             * Format: uuid
+             */
+            basis_bundle_id: string;
+        };
+        /** PointReviewItem */
+        PointReviewItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Point Revision */
+            point_revision: number;
+            /** Dependency Fingerprint */
+            dependency_fingerprint: string;
+            /** Reviewed Fields */
+            reviewed_fields?: ("intent" | "expected_direction" | "rule_applicability" | "citations")[];
+            /**
+             * Semantic Resolution
+             * @default
+             */
+            semantic_resolution: string;
+            /** Evidence Ids */
+            evidence_ids?: string[];
+        };
+        /** PointReviews */
+        PointReviews: {
+            /** Revision */
+            revision: number;
+            /** Items */
+            items: components["schemas"]["PointReviewItem"][];
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "approved" | "rejected";
+            /** Note */
+            note: string;
         };
         /** Preview */
         Preview: {
@@ -2907,6 +3443,20 @@ export interface components {
         Revision: {
             /** Revision */
             revision: number;
+        };
+        /** RuleEvidenceInput */
+        RuleEvidenceInput: {
+            /** Revision */
+            revision: number;
+            /**
+             * Rule Id
+             * Format: uuid
+             */
+            rule_id: string;
+            /** Evidence Ids */
+            evidence_ids: string[];
+            /** Note */
+            note: string;
         };
         /** Run */
         Run: {
@@ -3202,6 +3752,15 @@ export interface components {
             content: string;
             check_reference?: components["schemas"]["CheckReference"] | null;
         };
+        /** SourceSegment */
+        SourceSegment: {
+            /** Unit Id */
+            unit_id: string;
+            /** Start */
+            start: number;
+            /** End */
+            end: number;
+        };
         /** SpecialistOutput */
         SpecialistOutput: {
             /** Summary */
@@ -3210,6 +3769,11 @@ export interface components {
             findings?: components["schemas"]["Finding"][];
             /** Missing Information */
             missing_information?: string[];
+        };
+        /** StagedRevision */
+        StagedRevision: {
+            /** Revision */
+            revision: number;
         };
         /** Strategy */
         Strategy: {
@@ -3356,6 +3920,11 @@ export interface components {
             role: "requirement" | "context";
             /** Previous Id */
             previous_id?: string | null;
+            /**
+             * Source Url
+             * @default
+             */
+            source_url: string;
         };
         /** Turn */
         Turn: {
@@ -3471,6 +4040,16 @@ export interface components {
             /** Error */
             error?: string | null;
         };
+        /** WorkflowInput */
+        WorkflowInput: {
+            /** Revision */
+            revision: number;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "standard" | "strict";
+        };
         /** Report */
         opslens__diagnostic__contracts__Report: {
             /** Summary */
@@ -3511,6 +4090,203 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listing_api_v1_caseflow_projects__pid__documents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    detail_api_v1_caseflow_projects__pid__documents__did__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                did: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    original_api_v1_caseflow_projects__pid__documents__did__original_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                did: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_evidence_api_v1_caseflow_projects__pid__evidence_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EvidenceInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resolve_legacy_api_v1_caseflow_projects__pid__evidence_resolve_legacy_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LegacyInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    evidence_api_v1_caseflow_projects__pid__evidence__eid__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                eid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     projects_api_v1_caseflow_projects_get: {
         parameters: {
             query?: never;
@@ -3956,7 +4732,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Revision"];
+                "application/json": components["schemas"]["CaseOperation"];
             };
         };
         responses: {
@@ -4487,6 +5263,423 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    workflow_api_v1_caseflow_projects__pid__workflow_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkflowInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    group_list_api_v1_caseflow_projects__pid__task_groups_get: {
+        parameters: {
+            query?: {
+                request_id?: string | null;
+            };
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_group_api_v1_caseflow_projects__pid__task_groups_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GroupInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    group_detail_api_v1_caseflow_projects__pid__task_groups__gid__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                gid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_group_api_v1_caseflow_projects__pid__task_groups__gid__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                gid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StagedRevision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bundle_detail_api_v1_caseflow_projects__pid__basis_bundles__bid__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                bid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    point_list_api_v1_caseflow_projects__pid__test_points_get: {
+        parameters: {
+            query?: {
+                bundle_id?: string | null;
+                search?: string;
+                group?: string;
+                type?: string;
+                module?: string;
+                priority?: string;
+                status?: string;
+                needs_attention?: boolean;
+            };
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_point_api_v1_caseflow_projects__pid__test_points_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PointInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_point_api_v1_caseflow_projects__pid__test_points__tid__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                tid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PointEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_points_api_v1_caseflow_projects__pid__test_point_reviews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PointReviews"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bind_rule_evidence_api_v1_caseflow_projects__pid__basis_bundles__bid__rule_evidence_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                bid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleEvidenceInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    case_trace_detail_api_v1_caseflow_projects__pid__cases__cid__trace_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                cid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

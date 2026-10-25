@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type {NextStep} from '../caseflowWorkflow'
-defineProps<{next:NextStep}>()
+defineProps<{next:NextStep,standard?:boolean}>()
 defineEmits<{proceed:[]}>()
 const stages=['提供需求','确认规则','审核清单','导出交付']
 </script>
 <template>
 <section class="workflow-guide" aria-label="当前进度与下一步">
- <ol class="workflow-stages"><li v-for="(stage,i) in stages" :key="stage" :class="{current:i===next.step,passed:i<next.step}" :aria-current="i===next.step?'step':undefined"><span>{{i<next.step?'✓':i+1}}</span>{{stage}}</li></ol>
+ <ol class="workflow-stages"><li v-for="(stage,i) in (standard?['资料与依据','测试点评审','详细用例','导出交付']:stages)" :key="stage" :class="{current:i===next.step,passed:i<next.step}" :aria-current="i===next.step?'step':undefined"><span>{{i<next.step?'✓':i+1}}</span>{{stage}}</li></ol>
  <div class="workflow-next"><div><small>现在做什么</small><h2>{{next.title}}</h2><p>{{next.description}}</p></div><button v-if="next.action" class="primary" @click="$emit('proceed')">{{next.action}} →</button></div>
 </section>
 </template>

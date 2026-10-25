@@ -116,7 +116,9 @@ def fingerprint(s,item):
     values={key:item.get(key) for key in ('title',*FIELDS,'citations','requirement_ids','numeric_input','calculation')}
     reqs=[store.find(s['requirements'],rid) for rid in item['requirement_ids']]
     rules=[r for r in s.get('numeric_rules',[]) if set(r['requirement_ids'])&set(item['requirement_ids'])]
-    return store.digest([values,reqs,rules])
+    from . import case_trace
+    adopted=case_trace.evidence_fingerprint(s,item) if case_trace.is_point(item) else None
+    return store.digest([values,reqs,rules,adopted]) if adopted else store.digest([values,reqs,rules])
 
 def report_current(s,item):
     report=item.get('grounding')
@@ -142,6 +144,11 @@ supported表示字段中的所有业务主张均有依据，必须列出关联so
 
 def review_cases(s,items,provider,document_ids):
     from . import store
+    from . import case_trace
+    if any(case_trace.is_point(item) for item in items):
+        if not all(case_trace.is_point(item) for item in items):raise ValueError('新旧链路用例请分开复核')
+        from .case_expansion import review_saved
+        return review_saved(s,items,provider)
     sources=[]
     for item in items:
         for rid in item['requirement_ids']:
@@ -183,6 +190,9 @@ def save_checks(s,items):
         if fingerprint(s,row)!=item['grounding']['fingerprint']:raise FileExistsError('用例或规则已有变化，请重新检查')
         store.snapshot(s,'case',row)
         row['grounding']=item['grounding']
+        for issue in item['grounding'].get('blocking_issues',[]):
+            from . import points
+            points.question(s,issue,point_ids=[row['test_point_id']],reference={'kind':'case_review','id':row['id'],'text':issue})
         row.pop('grounding_ack',None)
         if row['status']=='approved' and item['grounding']['status']!='checked':row['status']='needs_review'
     return {'checked':len(items)}

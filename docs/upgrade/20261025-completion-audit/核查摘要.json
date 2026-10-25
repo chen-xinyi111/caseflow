@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-25",
+  "implementation_commit": "b355e11",
+  "scope": "approved five-stage plan; excluded modules remain excluded",
+  "stages": {
+    "1_reference_analysis": "complete",
+    "2_design": "complete",
+    "3_documents_and_exact_sources": "implemented",
+    "4_basis_and_point_review": "implemented",
+    "5_cases_trace_change": "implemented"
+  },
+  "plan_functional_gaps_found": [],
+  "fresh_checks": {
+    "offline_backend": 74,
+    "frontend": 33,
+    "typecheck": "passed",
+    "production_build": "passed",
+    "openapi_matches_code": true
+  },
+  "previous_stage5_evidence": {
+    "backend_full": 390,
+    "new_case_checks": 38,
+    "database_roundtrip_tables": 46,
+    "live_model_calls": 0
+  },
+  "not_repeated_this_turn": [
+    "database full regression",
+    "browser workflows",
+    "database migration and restore"
+  ],
+  "outstanding_verification": [
+    "real model semantic quality and online embedding/reranking",
+    "production database deployment",
+    "full legacy browser matrix",
+    "unconfirmed cause of an earlier legacy recovery test fluctuation"
+  ],
+  "excluded_future_features": [
+    "cross-project shared knowledge",
+    "expert platform",
+    "full wiki and knowledge graph",
+    "case reuse library and regression plans",
+    "simulated business execution and issue/retest workflow"
+  ],
+  "protected_files_unchanged": 40,
+  "reference_screenshots_indexed": 11,
+  "plan_snapshots": [
+    {
+      "file": "CaseFlow_REA参考分析与分阶段改造计划.md",
+      "sha256": "4ee709f44d8ae21cc86fd5517a50257ea957969f4398f1f57db8f349cced9905",
+      "original_unchanged": true
+    },
+    {
+      "file": "CaseFlow_新对话执行提示词.md",
+      "sha256": "5e78da01f386d935bb59d75c2c44d69565211db39ff373dfd485c119d1c91337",
+      "original_unchanged": true
+    }
+  ],
+  "github_repository": "chen-xinyi111/caseflow",
+  "publication_branch": "feat/caseflow-staged-upgrade",
+  "feishu_updated": false,
+  "production_database_modified": false,
+  "model_settings_modified": false
+}

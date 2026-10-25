@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-25T04:01:26.417028+00:00",
+  "data_kind": "stage4_synthetic_dump_only",
+  "database": "caseflow_stage5_legacy_migration_20261025_040124",
+  "tables_before": 46,
+  "tables_after": 46,
+  "added_tables": [],
+  "existing_table_fingerprints_unchanged": true,
+  "initialize_twice_idempotent": true,
+  "projects_read_without_write": 5,
+  "get_no_database_write": true,
+  "live_model_calls": 0,
+  "workers_started": false
+}

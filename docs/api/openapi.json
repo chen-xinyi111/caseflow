@@ -5,6 +5,308 @@
     "version": "0.5.0"
   },
   "paths": {
+    "/api/v1/caseflow/projects/{pid}/documents": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Listing",
+        "operationId": "listing_api_v1_caseflow_projects__pid__documents_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/documents/{did}": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Detail",
+        "operationId": "detail_api_v1_caseflow_projects__pid__documents__did__get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "did",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Did"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/documents/{did}/original": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Original",
+        "operationId": "original_api_v1_caseflow_projects__pid__documents__did__original_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "did",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Did"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/evidence": {
+      "post": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Create Evidence",
+        "operationId": "create_evidence_api_v1_caseflow_projects__pid__evidence_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvidenceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/evidence/resolve-legacy": {
+      "post": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Resolve Legacy",
+        "operationId": "resolve_legacy_api_v1_caseflow_projects__pid__evidence_resolve_legacy_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/evidence/{eid}": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow documents"
+        ],
+        "summary": "Evidence",
+        "operationId": "evidence_api_v1_caseflow_projects__pid__evidence__eid__get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "eid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Eid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/caseflow/projects": {
       "get": {
         "tags": [
@@ -666,7 +968,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Revision"
+                "$ref": "#/components/schemas/CaseOperation"
               }
             }
           }
@@ -1429,6 +1731,740 @@
         ],
         "responses": {
           "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/workflow": {
+      "post": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Workflow",
+        "operationId": "workflow_api_v1_caseflow_projects__pid__workflow_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/task-groups": {
+      "post": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Create Group",
+        "operationId": "create_group_api_v1_caseflow_projects__pid__task_groups_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Group List",
+        "operationId": "group_list_api_v1_caseflow_projects__pid__task_groups_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "request_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/task-groups/{gid}": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Group Detail",
+        "operationId": "group_detail_api_v1_caseflow_projects__pid__task_groups__gid__get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "gid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Gid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/task-groups/{gid}/resume": {
+      "post": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Resume Group",
+        "operationId": "resume_group_api_v1_caseflow_projects__pid__task_groups__gid__resume_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "gid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Gid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StagedRevision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/basis-bundles/{bid}": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Bundle Detail",
+        "operationId": "bundle_detail_api_v1_caseflow_projects__pid__basis_bundles__bid__get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "bid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/test-points": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Point List",
+        "operationId": "point_list_api_v1_caseflow_projects__pid__test_points_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "bundle_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Bundle Id"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Search"
+            }
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Group"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Type"
+            }
+          },
+          {
+            "name": "module",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Module"
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Priority"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Status"
+            }
+          },
+          {
+            "name": "needs_attention",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Needs Attention"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Add Point",
+        "operationId": "add_point_api_v1_caseflow_projects__pid__test_points_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PointInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/test-points/{tid}": {
+      "post": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Edit Point",
+        "operationId": "edit_point_api_v1_caseflow_projects__pid__test_points__tid__post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "tid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PointEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/test-point-reviews": {
+      "post": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Review Points",
+        "operationId": "review_points_api_v1_caseflow_projects__pid__test_point_reviews_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PointReviews"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/basis-bundles/{bid}/rule-evidence": {
+      "post": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Bind Rule Evidence",
+        "operationId": "bind_rule_evidence_api_v1_caseflow_projects__pid__basis_bundles__bid__rule_evidence_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "bid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleEvidenceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/cases/{cid}/trace": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Case Trace Detail",
+        "operationId": "case_trace_detail_api_v1_caseflow_projects__pid__cases__cid__trace_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "cid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -4501,6 +5537,14 @@
             "type": "boolean",
             "title": "Acknowledge Grounding",
             "default": false
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CaseSelection"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Items"
           }
         },
         "additionalProperties": false,
@@ -4602,6 +5646,12 @@
               }
             ],
             "title": "Previous Id"
+          },
+          "source_url": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Source Url",
+            "default": ""
           }
         },
         "type": "object",
@@ -4673,6 +5723,30 @@
             "type": "integer",
             "minimum": 1.0,
             "title": "Revision"
+          },
+          "case_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Revision"
+          },
+          "binding_fingerprint": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binding Fingerprint"
           },
           "title": {
             "anyOf": [
@@ -4765,6 +5839,86 @@
             "type": "boolean",
             "title": "Acknowledge Grounding",
             "default": false
+          },
+          "point_binding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PointBinding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviewed_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "preconditions",
+                    "data",
+                    "steps",
+                    "expected"
+                  ]
+                },
+                "type": "array",
+                "maxItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed Fields"
+          },
+          "semantic_resolution": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Semantic Resolution"
+          },
+          "evidence_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array",
+                "maxItems": 60
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Ids"
+          },
+          "numeric_input": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NumericInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recalculate": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recalculate"
           }
         },
         "additionalProperties": false,
@@ -4773,6 +5927,106 @@
           "revision"
         ],
         "title": "CaseEdit"
+      },
+      "CaseOperation": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "case_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Revision"
+          },
+          "binding_fingerprint": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binding Fingerprint"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "CaseOperation"
+      },
+      "CaseSelection": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "case_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Case Revision"
+          },
+          "binding_fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Binding Fingerprint"
+          },
+          "acknowledge_grounding": {
+            "type": "boolean",
+            "title": "Acknowledge Grounding",
+            "default": false
+          },
+          "reviewed_fields": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "preconditions",
+                "data",
+                "steps",
+                "expected"
+              ]
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Reviewed Fields"
+          },
+          "semantic_resolution": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Semantic Resolution",
+            "default": ""
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 60,
+            "title": "Evidence Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "case_revision",
+          "binding_fingerprint"
+        ],
+        "title": "CaseSelection"
       },
       "Cause": {
         "properties": {
@@ -5025,8 +6279,37 @@
             },
             "type": "array",
             "maxItems": 20,
-            "minItems": 1,
             "title": "Requirement Ids"
+          },
+          "point_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Point Ids"
+          },
+          "basis_bundle_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basis Bundle Id"
+          },
+          "basis_item_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Basis Item Ids"
           },
           "kind": {
             "type": "string",
@@ -5042,8 +6325,7 @@
         "type": "object",
         "required": [
           "revision",
-          "question",
-          "requirement_ids"
+          "question"
         ],
         "title": "ClarificationInput"
       },
@@ -5273,6 +6555,15 @@
             "maxLength": 100,
             "minLength": 1,
             "title": "Name"
+          },
+          "workflow_mode": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "strict"
+            ],
+            "title": "Workflow Mode",
+            "default": "standard"
           }
         },
         "additionalProperties": false,
@@ -5640,6 +6931,44 @@
           "sha256"
         ],
         "title": "Evidence"
+      },
+      "EvidenceInput": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Snapshot Sha256"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/SourceSegment"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Segments"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 101000,
+            "minLength": 1,
+            "title": "Quote"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "document_id",
+          "snapshot_sha256",
+          "segments",
+          "quote"
+        ],
+        "title": "EvidenceInput"
       },
       "ExternalConsent": {
         "properties": {
@@ -6211,6 +7540,86 @@
           "references"
         ],
         "title": "Finding"
+      },
+      "GroupInput": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Request Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "prepare_basis",
+              "extract_points",
+              "expand_cases"
+            ],
+            "title": "Kind"
+          },
+          "consent": {
+            "type": "boolean",
+            "title": "Consent"
+          },
+          "target": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Target",
+            "default": ""
+          },
+          "document_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Document Ids"
+          },
+          "rule_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Rule Ids"
+          },
+          "basis_bundle_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basis Bundle Id"
+          },
+          "point_bindings": {
+            "items": {
+              "$ref": "#/components/schemas/PointBinding"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Point Bindings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision",
+          "request_id",
+          "kind",
+          "consent"
+        ],
+        "title": "GroupInput"
       },
       "HTTPValidationError": {
         "properties": {
@@ -6944,6 +8353,34 @@
         ],
         "title": "LabStatus"
       },
+      "LegacyInput": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Page"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Quote"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "document_id",
+          "page",
+          "quote"
+        ],
+        "title": "LegacyInput"
+      },
       "LineRange": {
         "properties": {
           "source_id": {
@@ -7113,6 +8550,29 @@
         "additionalProperties": false,
         "type": "object",
         "title": "ModelSettings"
+      },
+      "NumericInput": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Rule Id"
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rule_id",
+          "value"
+        ],
+        "title": "NumericInput"
       },
       "NumericRule": {
         "properties": {
@@ -7409,6 +8869,372 @@
           "expires_at"
         ],
         "title": "Plan"
+      },
+      "PointBinding": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Fingerprint"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "revision",
+          "fingerprint"
+        ],
+        "title": "PointBinding"
+      },
+      "PointEdit": {
+        "properties": {
+          "intent": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Intent"
+          },
+          "group": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Group",
+            "default": "未分组"
+          },
+          "types": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "正常",
+                "异常",
+                "边界",
+                "权限",
+                "状态",
+                "界面",
+                "接口",
+                "性能",
+                "安全"
+              ]
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Types"
+          },
+          "module": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Module",
+            "default": "未分组"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Tags"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "P1",
+              "P2",
+              "P3"
+            ],
+            "title": "Priority",
+            "default": "P2"
+          },
+          "rule_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Rule Ids"
+          },
+          "basis_item_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Basis Item Ids"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 60,
+            "title": "Evidence Ids"
+          },
+          "questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Questions"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "basis_bundle_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Basis Bundle Id"
+          },
+          "point_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Point Revision"
+          },
+          "dependency_fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Dependency Fingerprint"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "intent",
+          "revision",
+          "basis_bundle_id",
+          "point_revision",
+          "dependency_fingerprint"
+        ],
+        "title": "PointEdit"
+      },
+      "PointInput": {
+        "properties": {
+          "intent": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Intent"
+          },
+          "group": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Group",
+            "default": "未分组"
+          },
+          "types": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "正常",
+                "异常",
+                "边界",
+                "权限",
+                "状态",
+                "界面",
+                "接口",
+                "性能",
+                "安全"
+              ]
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Types"
+          },
+          "module": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Module",
+            "default": "未分组"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Tags"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "P1",
+              "P2",
+              "P3"
+            ],
+            "title": "Priority",
+            "default": "P2"
+          },
+          "rule_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Rule Ids"
+          },
+          "basis_item_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Basis Item Ids"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 60,
+            "title": "Evidence Ids"
+          },
+          "questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Questions"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "basis_bundle_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Basis Bundle Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "intent",
+          "revision",
+          "basis_bundle_id"
+        ],
+        "title": "PointInput"
+      },
+      "PointReviewItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "point_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Point Revision"
+          },
+          "dependency_fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Dependency Fingerprint"
+          },
+          "reviewed_fields": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "intent",
+                "expected_direction",
+                "rule_applicability",
+                "citations"
+              ]
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Reviewed Fields"
+          },
+          "semantic_resolution": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Semantic Resolution",
+            "default": ""
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 60,
+            "title": "Evidence Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "point_revision",
+          "dependency_fingerprint"
+        ],
+        "title": "PointReviewItem"
+      },
+      "PointReviews": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PointReviewItem"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Items"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "rejected"
+            ],
+            "title": "Decision"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision",
+          "items",
+          "decision",
+          "note"
+        ],
+        "title": "PointReviews"
       },
       "Preview": {
         "properties": {
@@ -7777,6 +9603,45 @@
           "revision"
         ],
         "title": "Revision"
+      },
+      "RuleEvidenceInput": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "rule_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Rule Id"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Evidence Ids"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 1500,
+            "minLength": 1,
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision",
+          "rule_id",
+          "evidence_ids",
+          "note"
+        ],
+        "title": "RuleEvidenceInput"
       },
       "Run": {
         "properties": {
@@ -8451,6 +10316,34 @@
         ],
         "title": "SourceInput"
       },
+      "SourceSegment": {
+        "properties": {
+          "unit_id": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Unit Id"
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Start"
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "End"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "unit_id",
+          "start",
+          "end"
+        ],
+        "title": "SourceSegment"
+      },
       "SpecialistOutput": {
         "properties": {
           "summary": {
@@ -8482,6 +10375,21 @@
           "summary"
         ],
         "title": "SpecialistOutput"
+      },
+      "StagedRevision": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "StagedRevision"
       },
       "Strategy": {
         "properties": {
@@ -8894,6 +10802,12 @@
               }
             ],
             "title": "Previous Id"
+          },
+          "source_url": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Source Url",
+            "default": ""
           }
         },
         "additionalProperties": false,
@@ -9226,6 +11140,30 @@
           "started_at"
         ],
         "title": "VerificationRound"
+      },
+      "WorkflowInput": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "strict"
+            ],
+            "title": "Mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision",
+          "mode"
+        ],
+        "title": "WorkflowInput"
       },
       "opslens__diagnostic__contracts__Report": {
         "properties": {

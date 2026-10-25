@@ -1,5 +1,5 @@
 type Row={id:string,status?:string,document_id?:string,previous_id?:string|null,role?:string,decision?:string,selected_ids?:string[],[key:string]:any}
-export type WorkflowState={documents:Row[],requirements:Row[],cases:(Row&{applied_to?:string})[],changes:Row[],clarifications?:Row[]}
+export type WorkflowState={documents:Row[],requirements:Row[],cases:(Row&{applied_to?:string})[],changes:Row[],clarifications?:Row[],workflow_mode?:string,test_points?:Row[]}
 export type WorkflowTask={kind:string,status:string,input?:{document_ids?:string[]}}
 export type NextStep={step:number,title:string,description:string,action:string,target:string}
 
@@ -20,6 +20,18 @@ export function nextStep(s:WorkflowState,tasks:WorkflowTask[]):NextStep{
  const running=tasks.find(t=>['queued','running'].includes(t.status))
  if(running)return {step:['generate','review'].includes(running.kind)?2:0,title:'正在处理资料',description:'任务已保存，完成后会显示结果和下一步。',action:'',target:''}
  if(!s.documents.length)return {step:0,title:'添加你的需求',description:'粘贴需求文字，或导入已有文档。清单将根据这些内容整理。',action:'添加需求',target:'import'}
+ if(s.workflow_mode==='standard'){
+  if(s.changes.some(c=>c.status==='pending'))return {step:1,title:'核对规则变化',description:'比较新旧原文并明确接受变化，再准备新依据与复审测试点。',action:'查看规则变化',target:'changes'}
+  if(unreadDocuments(s,tasks).length)return {step:0,title:'准备所选资料的依据',description:'明确目标和授权版本，准备规则、公共条件与原文位置。',action:'准备依据',target:'scope'}
+  const points=s.test_points??[]
+  if(points.some(p=>p.status==='needs_review'))return {step:1,title:'重新核对受影响的测试点',description:'先准备并绑定新依据，再人工复审相关测试点；旧用例与执行快照保留。',action:'打开测试点评审',target:'points'}
+  if(s.cases.some(c=>!c.applied_to&&c.status==='needs_review'))return {step:2,title:'更新受影响的详细用例',description:'核对新依据，明确绑定新修订或应用有效建议，然后重新审核。',action:'查看待复审用例',target:'review'}
+  if(s.cases.some(c=>!c.applied_to&&c.status==='draft'))return {step:2,title:'审核详细用例设计',description:'对照采用的测试点、公共条件与原文，逐例核对前置、数据、步骤和预期。',action:'打开待审核用例',target:'drafts'}
+  if(s.cases.some(c=>!c.applied_to&&c.status==='approved'))return {step:3,title:'导出已保存的用例与追溯',description:'设计审核与业务执行分别记录，未实际执行时保留“未执行”。',action:'查看并导出用例',target:'export'}
+  if(points.some(p=>p.status==='approved'&&!p.blocking_reasons?.length))return {step:2,title:'由已通过点展开详细用例',description:'明确选择当前测试点及修订，允许后台逐点展开，结果先保存为草稿。',action:'选择测试点并展开',target:'points'}
+  if(points.length)return {step:1,title:'人工评审测试点',description:'核对测试意图、规则草稿、公共条件、原文和相关待澄清问题。',action:'打开测试点评审',target:'points'}
+  return {step:1,title:'从准备依据提取测试点',description:'核对依据包与未解决问题，再提取独立测试点供人工评审。',action:'检查准备包',target:'scope'}
+ }
  const updates=updatedDrafts(s)
  if(updates.length)return {step:1,title:`确认${updates.length}条已修改规则`,description:'修改已保存。核对新规则后，在这里确认，再继续处理其余变化。',action:'确认修改后的规则',target:'updated'}
  const pending=s.changes.filter(c=>c.status==='pending')

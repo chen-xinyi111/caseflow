@@ -54,6 +54,29 @@ def ingest(filename, raw, title, source, version, applicable_versions):
         return document(conn,document_id)
 
 
+def ingest_snapshot(filename, pages, title, source, version):
+    """Index canonical pages without flattening/reparsing. Bytes are derived TXT, not a user original."""
+    if not pages or not all(isinstance(p,str) for p in pages) or not any(p.strip() for p in pages):
+        raise ValueError('索引快照没有可用正文')
+    raw='\n\n'.join(pages).encode('utf-8');digest=hashlib.sha256(raw).hexdigest()
+    with db.connect() as conn:
+        conn.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s,1201))',(json.dumps([source,version]),))
+        old=conn.execute('SELECT * FROM kb_documents WHERE source=%s AND doc_version=%s',(source,version)).fetchone()
+        if old:
+            if old['pages']!=pages or old['sha256']!=digest or old['title']!=title:
+                raise FileExistsError('索引快照版本已存在不同内容')
+            return document(conn,old['id'])
+        did=uuid4()
+        conn.execute('''INSERT INTO kb_documents(id,title,source,doc_version,applicable_versions,filename,format,original_bytes,pages,sha256)
+            VALUES (%s,%s,%s,%s,%s,%s,'txt',%s,%s,%s)''',(did,title,source,version,jsonb(['*']),filename,raw,jsonb(pages),digest))
+        for ordinal,chunk in enumerate(split_pages(pages)):
+            retrieval=title+'\n'+chunk['content'];cid=uuid5(did,str(ordinal))
+            conn.execute('''INSERT INTO kb_chunks(id,document_id,ordinal,page,start_char,end_char,line_start,line_end,heading,content,retrieval_text,sha256,embedding_key)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+                (cid,did,ordinal,chunk['page'],chunk['start'],chunk['end'],chunk['line_start'],chunk['line_end'],chunk['heading'],chunk['content'],retrieval,hashlib.sha256(chunk['content'].encode()).hexdigest(),embedding_key(retrieval)))
+        return document(conn,did)
+
+
 def append_event(conn, task_id, kind, payload):
     conn.execute("INSERT INTO kb_events(task_id,kind,payload) VALUES (%s,%s,%s)",(task_id,kind,jsonb(payload)))
 

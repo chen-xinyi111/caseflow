@@ -239,5 +239,5 @@ def test_partial_parallel_subtask_resumes_without_repeating_completed_role(clien
     monkeypatch.setattr(durability.SavedModel,'generate',original_generate)
     worker.process(worker.claim(),model,tools)
     saved=client.get('/api/v1/investigations/'+task['id']).json()
-    assert saved['status']=='completed' and saved['metrics']['model_calls']==model.calls==6
+    assert saved['status']=='completed' and saved['metrics']['model_calls']==model.calls==6, (saved.get('error'),saved['metrics'],saved['collaboration'],tools.order,model.calls)
     assert tools.order.count('manual')==tools.order.count('runtime')==1

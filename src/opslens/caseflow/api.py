@@ -5,15 +5,22 @@ from typing import Literal
 from uuid import UUID,uuid4
 from fastapi import APIRouter,UploadFile,File,Form,HTTPException,Request
 from fastapi.responses import Response,StreamingResponse
-from pydantic import BaseModel,ConfigDict,Field
+from pydantic import BaseModel,ConfigDict,Field,StrictInt
 from opslens import db
 from opslens.diagnostic import model
 from opslens.diagnostic.contracts import ModelSettings
-from . import store,files
+from . import store,files,documents,case_trace,grounding
+from .points import ReviewFailure
+from .staged_contracts import PointBinding
+from .documents_api import router as documents_router
+from .staged_api import router as staged_router
 
 router=APIRouter(prefix='/api/v1/caseflow',tags=['CaseFlow'])
+router.include_router(documents_router)
 class Strict(BaseModel):model_config=ConfigDict(extra='forbid')
-class Create(Strict):name:str=Field(min_length=1,max_length=100)
+class Create(Strict):
+    name:str=Field(min_length=1,max_length=100)
+    workflow_mode:Literal['standard','strict']='standard'
 class Revision(Strict):revision:int=Field(ge=1)
 class Archive(Revision):archived:bool
 class Text(Revision):
@@ -21,6 +28,7 @@ class Text(Revision):
     content:str=Field(min_length=1,max_length=100000)
     role:Literal['requirement','context']='requirement'
     previous_id:UUID|None=None
+    source_url:str=Field(default='',max_length=2000)
 class RequirementEdit(Revision):
     text:str=Field(min_length=1,max_length=3000)
     status:Literal['draft','confirmed','excluded']
@@ -30,7 +38,18 @@ class ManualRequirement(Revision):
     document_id:UUID
     page:int=Field(ge=1)
     quote:str=Field(min_length=2,max_length=500)
-class CaseEdit(Revision):
+class CaseSelection(Strict):
+    id:UUID
+    case_revision:StrictInt=Field(ge=1)
+    binding_fingerprint:str=Field(pattern=r'^[a-f0-9]{64}$')
+    acknowledge_grounding:bool=False
+    reviewed_fields:list[Literal['preconditions','data','steps','expected']]=Field(default_factory=list,max_length=4)
+    semantic_resolution:str=Field(default='',max_length=2000)
+    evidence_ids:list[UUID]=Field(default_factory=list,max_length=60)
+class CaseOperation(Revision):
+    case_revision:StrictInt|None=Field(default=None,ge=1)
+    binding_fingerprint:str|None=Field(default=None,pattern=r'^[a-f0-9]{64}$')
+class CaseEdit(CaseOperation):
     title:str|None=Field(default=None,min_length=1,max_length=200)
     preconditions:str|None=Field(default=None,max_length=1500)
     data:str|None=Field(default=None,max_length=1500)
@@ -39,17 +58,27 @@ class CaseEdit(Revision):
     status:Literal['draft','approved','rejected','needs_review']|None=None
     review_note:str=Field(default='',max_length=2000)
     acknowledge_grounding:bool=False
+    point_binding:PointBinding|None=None
+    reviewed_fields:list[Literal['preconditions','data','steps','expected']]|None=Field(default=None,max_length=4)
+    semantic_resolution:str|None=Field(default=None,max_length=2000)
+    evidence_ids:list[UUID]|None=Field(default=None,max_length=60)
+    numeric_input:grounding.NumericInput|None=None
+    recalculate:bool|None=None
 class Batch(Revision):
     ids:list[UUID]=Field(min_length=1,max_length=100)
     status:Literal['approved','rejected']
     review_note:str=Field(min_length=1,max_length=2000)
     acknowledge_grounding:bool=False
+    items:list[CaseSelection]=Field(default_factory=list,max_length=100)
 class Change(Revision):
     action:Literal['add','replace','remove','reject']
     target_ids:list[UUID]=Field(default_factory=list,max_length=10)
 class ClarificationInput(Revision):
     question:str=Field(min_length=1,max_length=1000)
-    requirement_ids:list[UUID]=Field(min_length=1,max_length=20)
+    requirement_ids:list[UUID]=Field(default_factory=list,max_length=20)
+    point_ids:list[UUID]=Field(default_factory=list,max_length=100)
+    basis_bundle_id:UUID|None=None
+    basis_item_ids:list[UUID]=Field(default_factory=list,max_length=30)
     kind:Literal['ambiguity','conflict']='ambiguity'
 class ClarificationAnswer(Revision):answer:str=Field(min_length=1,max_length=3000)
 class TaskInput(Revision):
@@ -81,6 +110,7 @@ class RunInput(Revision):
 
 def checked(fn,*args,**kwargs):
     try:return fn(*args,**kwargs)
+    except ReviewFailure as e:raise HTTPException(400,e.detail) from None
     except LookupError as e:raise HTTPException(404,str(e)) from None
     except FileExistsError as e:raise HTTPException(409,str(e)) from None
     except (ValueError,KeyError,TypeError,IndexError) as e:raise HTTPException(400,str(e) or '输入无效') from None
@@ -90,7 +120,7 @@ def projects():
     with db.connect() as c:
         return [{k:p[k] for k in ('id','name','revision','updated_at')}|{'summary':store.summary(p['state']),'archived':bool(p['state'].get('archived',False))} for p in c.execute('SELECT * FROM cf_projects ORDER BY updated_at DESC').fetchall()]
 @router.post('/projects',status_code=201)
-def create(data:Create):return checked(lambda:store.public(store.create(data.name)))
+def create(data:Create):return checked(lambda:store.public(store.create(data.name,data.workflow_mode)))
 @router.get('/projects/{pid}')
 def project(pid:UUID):
     with db.connect() as c:return checked(lambda:store.public(store.get(c,pid)))
@@ -105,12 +135,11 @@ def history(pid:UUID):
         return c.execute('SELECT action,payload,created_at FROM cf_audit WHERE project_id=%s ORDER BY id DESC LIMIT 200',(pid,)).fetchall()
 @router.post('/projects/{pid}/texts')
 def text(pid:UUID,data:Text):
-    return checked(lambda:store.public(store.update(pid,data.revision,'document',lambda s:store.add_document(s,data.name,[data.content],data.role,str(data.previous_id) if data.previous_id else None))))
+    return checked(documents.save,pid,data.revision,data.name,data.content.encode('utf-8'),data.role,data.previous_id,data.source_url,pasted=True)
 @router.post('/projects/{pid}/files')
-async def upload(pid:UUID,file:UploadFile=File(...),revision:int=Form(...),role:Literal['requirement','context']=Form('requirement'),previous_id:UUID|None=Form(None)):
+async def upload(pid:UUID,file:UploadFile=File(...),revision:int=Form(...),role:Literal['requirement','context']=Form('requirement'),previous_id:UUID|None=Form(None),source_url:str=Form('',max_length=2000)):
     raw=await file.read(5*1024*1024+1);name=(file.filename or '资料.txt').replace('\\','/').split('/')[-1]
-    pages,warnings=checked(files.inspect,name,raw)
-    return checked(lambda:store.public(store.update(pid,revision,'document',lambda s:store.add_document(s,name,pages,role,str(previous_id) if previous_id else None,warnings))))
+    return checked(documents.save,pid,revision,name,raw,role,previous_id,source_url)
 @router.post('/projects/{pid}/requirements')
 def manual_requirement(pid:UUID,data:ManualRequirement):
     return checked(lambda:store.public(store.update(pid,data.revision,'manual_requirement',lambda s:store.manual_requirement(s,data.text,str(data.document_id),data.page,data.quote))))
@@ -119,23 +148,50 @@ def requirement(pid:UUID,rid:UUID,data:RequirementEdit):
     return checked(lambda:store.public(store.update(pid,data.revision,'requirement_review',lambda s:store.edit_requirement(s,str(rid),data.text,data.status,data.answer))))
 @router.post('/projects/{pid}/cases/{cid}')
 def case(pid:UUID,cid:UUID,data:CaseEdit):
-    values={k:store.clean(v) if isinstance(v,str) else [store.clean(x) for x in v] if isinstance(v,list) else v for k,v in data.model_dump(exclude_none=True).items() if k!='revision'}
+    values=data.model_dump(mode='json',exclude_none=True,exclude_unset=True,exclude={'revision'})
+    # Sanitize prose only: hashes and UUIDs can contain digit sequences resembling a phone.
+    for field in ('title','preconditions','data','expected','review_note','semantic_resolution'):
+        if field in values:values[field]=store.clean(values[field])
+    if 'steps' in values:values['steps']=[store.clean(step) for step in values['steps']]
+    if 'numeric_input' in data.model_fields_set:values['numeric_input']=data.numeric_input.model_dump(mode='json') if data.numeric_input else None
     return checked(lambda:store.public(store.update(pid,data.revision,'case_review',lambda s:store.edit_case(s,str(cid),copy.deepcopy(values)))))
 @router.post('/projects/{pid}/clarifications')
 def clarify(pid:UUID,data:ClarificationInput):
-    return checked(lambda:store.public(store.update(pid,data.revision,'clarification',lambda s:store.add_clarification(s,data.question,[str(i) for i in data.requirement_ids],data.kind))))
+    def add(s):
+        if not data.point_ids and not data.basis_bundle_id and not data.basis_item_ids:
+            return store.add_clarification(s,data.question,[str(i) for i in data.requirement_ids],data.kind)
+        from . import points
+        for rid in data.requirement_ids:store.find(s['requirements'],rid)
+        for tid in data.point_ids:store.find(s.get('test_points',[]),tid)
+        if data.basis_bundle_id:
+            b=store.find(s.get('basis_bundles',[]),data.basis_bundle_id)
+            for iid in data.basis_item_ids:store.find(b['items'],iid)
+        elif data.basis_item_ids:raise ValueError('包项需指定准备包')
+        if not (data.requirement_ids or data.point_ids or data.basis_item_ids):raise ValueError('问题必须关联规则、包项或测试点')
+        return {'clarification_id':points.question(s,data.question,requirement_ids=[str(i) for i in data.requirement_ids],point_ids=[str(i) for i in data.point_ids],
+            bundle_id=str(data.basis_bundle_id) if data.basis_bundle_id else None,item_ids=[str(i) for i in data.basis_item_ids],kind=data.kind)}
+    return checked(lambda:store.public(store.update(pid,data.revision,'clarification',add)))
 @router.post('/projects/{pid}/clarifications/{cid}')
 def clarify_answer(pid:UUID,cid:UUID,data:ClarificationAnswer):
     return checked(lambda:store.public(store.update(pid,data.revision,'clarification_answer',lambda s:store.resolve_clarification(s,str(cid),data.answer))))
 @router.post('/projects/{pid}/reviews')
 def review(pid:UUID,data:Batch):
     def apply(s):
-        for cid in data.ids:store.edit_case(s,str(cid),{'status':data.status,'review_note':data.review_note,'acknowledge_grounding':data.acknowledge_grounding})
+        if len(set(data.ids))!=len(data.ids):raise ValueError('评审用例不能重复')
+        bindings={str(i.id):i.model_dump(mode='json',exclude={'id'}) for i in data.items}
+        point_ids={str(cid) for cid in data.ids if case_trace.is_point(store.find(s['cases'],cid))}
+        if len(bindings)!=len(data.items) or set(bindings)!=point_ids:raise ValueError('新链路评审需提交每条用例的明确修订和指纹')
+        failures=[]
+        for cid in data.ids:
+            values={'status':data.status,'review_note':data.review_note,'acknowledge_grounding':data.acknowledge_grounding}|bindings.get(str(cid),{})
+            try:store.edit_case(s,str(cid),values)
+            except (ValueError,LookupError,FileExistsError) as exc:failures.append({'id':str(cid),'reason':str(exc)})
+        if failures:raise ReviewFailure(failures)
         return {'count':len(data.ids),'status':data.status}
     return checked(lambda:store.public(store.update(pid,data.revision,'batch_review',apply)))
 @router.post('/projects/{pid}/proposals/{cid}')
-def proposal(pid:UUID,cid:UUID,data:Revision):
-    return checked(lambda:store.public(store.update(pid,data.revision,'apply_proposal',lambda s:store.accept_proposal(s,str(cid)))))
+def proposal(pid:UUID,cid:UUID,data:CaseOperation):
+    return checked(lambda:store.public(store.update(pid,data.revision,'apply_proposal',lambda s:store.accept_proposal(s,str(cid),data.model_dump(mode='json',exclude={'revision'},exclude_none=True)))))
 @router.post('/projects/{pid}/changes/{cid}')
 def change(pid:UUID,cid:UUID,data:Change):
     return checked(lambda:store.public(store.update(pid,data.revision,'change_review',lambda s:store.decide_change(s,str(cid),data.action,[str(i) for i in data.target_ids]))))
@@ -165,12 +221,15 @@ def task(tid:UUID):
 def resume(tid:UUID,data:Revision):
     with db.connect() as c:
         t=checked(store.task,c,tid);p=checked(store.get,c,t['project_id'],True)
+        if t['input'].get('group_id'):raise HTTPException(409,'请从任务组继续，不单独重发组内叶任务')
         from .agent import processing_signature
         if t['status'] not in ('failed','blocked'):raise HTTPException(409,'任务当前不能继续')
         if p['revision']!=data.revision or p['revision']!=t['input']['revision'] or str(model.config(c)['id'])!=t['input']['config_id'] or t['input'].get('processing_signature')!=processing_signature():raise HTTPException(409,'资料、模型或索引规则已变化，保存结果仅供查看，请重新确认处理范围')
         unknown=c.execute("SELECT 1 FROM durable_operations WHERE family='caseflow' AND task_id=%s AND status='issued' AND paid",(tid,)).fetchone()
         if unknown:raise HTTPException(409,'存在结果未知的外部调用，不能自动重发；已保存步骤可查看')
         if c.execute("SELECT 1 FROM cf_tasks WHERE project_id=%s AND status IN ('queued','running')",(p['id'],)).fetchone():raise HTTPException(409,'项目已有处理任务')
+        from . import groups
+        checked(groups.ensure_idle,c,p['id'])
         c.execute("UPDATE cf_tasks SET status='queued',error=NULL,finished_at=NULL WHERE id=%s",(tid,))
         return store.task(c,tid)
 @router.get('/tasks/{tid}/events')
@@ -209,7 +268,7 @@ def export(pid:UUID,format:Literal['xlsx','md']='xlsx'):
         labels={'draft':'待审核','approved':'已审核','rejected':'已驳回','needs_review':'待复审'}
         for case in s['cases']:
             refs='\n'.join(store.find(s['requirements'],r)['code'] for r in case['requirement_ids'])
-            citations='\n'.join(store.find(s['documents'],q['document_id'])['name']+' 第'+str(q['page'])+'页：'+q['quote'] for q in case.get('citations',[]))
+            citations='\n'.join(store.find(s['documents'],q['document_id'])['name']+' · '+q['location_label']+'：'+q['quote'] for q in case['trace_snapshot']['sources']) if case_trace.is_point(case) else '\n'.join(store.find(s['documents'],q['document_id'])['name']+' 第'+str(q['page'])+'页：'+q['quote'] for q in case.get('citations',[]))
             rows.append([case['code'],case['revision'],'已应用建议' if case.get('applied_to') else labels[case['status']],refs,case['title'],case['preconditions'],case.get('data',''),'\n'.join(f'{i+1}. {step}' for i,step in enumerate(case['steps'])),case['expected'],'明确依据' if case['basis']=='explicit' else '补充建议',citations,case.get('review_note','')])
         from . import grounding
         for row,case in zip(rows,s['cases']):
@@ -217,13 +276,15 @@ def export(pid:UUID,format:Literal['xlsx','md']='xlsx'):
             label='尚未复核' if not report else '检查已失效' if not current else '自动复核未发现疑点' if report['status']=='checked' else '需人工核对'
             details='\n'.join(grounding.LABELS[f['field']]+'：'+f['reason'] for f in (report or {}).get('fields',[]))
             row.extend([label,details,'按已确认数值规则计算' if case.get('calculation') else ''])
-        headers=['用例编号','用例修订','审核状态','关联需求','标题','前置条件','输入数据','操作步骤','预期结果','依据类型','原文依据','审核说明','依据检查','检查说明','数值计算']
+        from .case_export import append_trace_columns
+        trace_headers=append_trace_columns(s,rows)
+        headers=['用例编号','用例修订','审核状态','关联需求','标题','前置条件','输入数据','操作步骤','预期结果','依据类型','原文依据','审核说明','依据检查','检查说明','数值计算']+trace_headers
         export_id=store.uid();s['exports'].append({'id':export_id,'at':store.now(),'format':format,'project_revision':p['revision'],'rows':copy.deepcopy(rows)})
         c.execute('UPDATE cf_projects SET state=%s WHERE id=%s',(store.jsonb(s),pid))
         c.execute('INSERT INTO cf_audit(project_id,action,payload) VALUES (%s,%s,%s)',(pid,'export',store.jsonb({'id':export_id,'count':len(rows),'format':format})))
     if format=='xlsx':body=files.xlsx(headers,rows);media='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     else:
-        parts=['# '+p['name'],'生成的是测试设计；审核与执行状态分别记录。']
+        parts=['# '+p['name'],'生成的是测试设计；审核与执行状态分别记录。本地定位链接需要CaseFlow服务运行。']
         for row in rows:
             parts.extend(['\n## '+row[0]+' '+row[4],*[f'\n**{h}**\n\n{v}' for h,v in zip(headers,row)]])
         body='\n'.join(parts).encode();media='text/markdown; charset=utf-8'
@@ -244,7 +305,7 @@ EXAMPLES={
  'registration':('活动报名', '活动报名仅向已登录用户开放。\n每名用户对同一活动只能报名一次。\n活动报名人数不能超过设置的名额。\n报名截止后不允许新增报名。\n未说明：退出报名是否立即释放名额。')}
 @router.post('/examples/{key}',status_code=201)
 def example(key:Literal['reservation','permission','registration']):
-    name,text=EXAMPLES[key];p=store.create(name+' · 示例')
+    name,text=EXAMPLES[key];p=store.create(name+' · 示例','strict')
     def seed(s):
         store.add_document(s,name+'需求说明',[text]);did=s['documents'][0]['id'];s['example']=True
         for line in text.splitlines():
@@ -266,3 +327,6 @@ def example(key:Literal['reservation','permission','registration']):
         for r in s['requirements']:r['status']='draft'
         return {'example':key,'note':'人工预置示例，不是真实模型结果'}
     return store.public(store.update(p['id'],p['revision'],'example',seed))
+
+
+router.include_router(staged_router)

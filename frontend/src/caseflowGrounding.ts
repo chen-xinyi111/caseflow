@@ -3,6 +3,7 @@ export function contentChanged(saved:any,edited:any,steps:string[]):boolean{
  return ['title','preconditions','data','expected'].some(k=>saved[k]!==edited[k])||JSON.stringify(saved.steps)!==JSON.stringify(steps)
 }
 export function needsGroundingAcknowledgement(row:any,changed=false):boolean{
+ if(row?.trace_mode==='point')return changed||!row.grounding||!row.grounding.current||row.grounding.status!=='checked'||row.trace_current===false
  return !!row?.grounding&&(changed||!row.grounding.current||row.grounding.status!=='checked')
 }
 export function groundingLabel(row:any):string{

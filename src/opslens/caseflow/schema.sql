@@ -21,3 +21,46 @@ CREATE TABLE IF NOT EXISTS cf_requests (
  finished_at timestamptz, UNIQUE(task_id,stage)
 );
 CREATE INDEX IF NOT EXISTS cf_task_project ON cf_tasks(project_id,created_at);
+
+CREATE TABLE IF NOT EXISTS cf_document_versions (
+ document_id uuid PRIMARY KEY, project_id uuid NOT NULL REFERENCES cf_projects(id),
+ source_kind text NOT NULL CHECK(source_kind IN ('file','paste','legacy')),
+ format text NOT NULL CHECK(format IN ('pdf','docx','md','txt','legacy_text')),
+ original_bytes bytea, original_sha256 text, snapshot jsonb NOT NULL,
+ snapshot_sha256 text NOT NULL, parser_signature text NOT NULL,
+ created_at timestamptz NOT NULL DEFAULT now(),
+ UNIQUE(project_id,document_id,snapshot_sha256),
+ CHECK((original_bytes IS NULL) = (original_sha256 IS NULL))
+);
+CREATE TABLE IF NOT EXISTS cf_evidence (
+ id uuid PRIMARY KEY, project_id uuid NOT NULL, document_id uuid NOT NULL,
+ snapshot_sha256 text NOT NULL, segments jsonb NOT NULL CHECK(jsonb_typeof(segments)='array'),
+ quote text NOT NULL, quote_sha256 text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(),
+ FOREIGN KEY(project_id,document_id,snapshot_sha256)
+ REFERENCES cf_document_versions(project_id,document_id,snapshot_sha256)
+);
+CREATE INDEX IF NOT EXISTS cf_evidence_document ON cf_evidence(project_id,document_id);
+CREATE OR REPLACE FUNCTION cf_immutable_source() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ RAISE EXCEPTION 'Document versions and evidence are immutable; append a new version instead';
+END $$;
+DROP TRIGGER IF EXISTS cf_version_immutable ON cf_document_versions;
+CREATE TRIGGER cf_version_immutable BEFORE UPDATE OR DELETE ON cf_document_versions
+ FOR EACH ROW EXECUTE FUNCTION cf_immutable_source();
+DROP TRIGGER IF EXISTS cf_evidence_immutable ON cf_evidence;
+CREATE TRIGGER cf_evidence_immutable BEFORE UPDATE OR DELETE ON cf_evidence
+ FOR EACH ROW EXECUTE FUNCTION cf_immutable_source();
+
+CREATE TABLE IF NOT EXISTS cf_task_groups (
+ id uuid PRIMARY KEY, project_id uuid NOT NULL REFERENCES cf_projects(id), request_id uuid NOT NULL UNIQUE,
+ kind text NOT NULL CHECK(kind IN ('prepare_basis','extract_points','expand_cases')), input jsonb NOT NULL, input_digest text NOT NULL,
+ expected_project_revision integer NOT NULL, config_id uuid NOT NULL, processing_signature text NOT NULL,
+ items jsonb NOT NULL, status text NOT NULL DEFAULT 'queued'
+ CHECK(status IN ('queued','running','completed','partial','blocked','failed','stale')),
+ error text, created_at timestamptz NOT NULL DEFAULT now(), finished_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS cf_group_project ON cf_task_groups(project_id,created_at);
+
+-- Additive upgrade for the pre-existing stage4 parent-group constraint.
+ALTER TABLE cf_task_groups DROP CONSTRAINT IF EXISTS cf_task_groups_kind_check;
+ALTER TABLE cf_task_groups ADD CONSTRAINT cf_task_groups_kind_check CHECK(kind IN ('prepare_basis','extract_points','expand_cases'));
