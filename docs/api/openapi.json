@@ -968,7 +968,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Revision"
+                "$ref": "#/components/schemas/CaseOperation"
               }
             }
           }
@@ -2411,6 +2411,58 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/caseflow/projects/{pid}/cases/{cid}/trace": {
+      "get": {
+        "tags": [
+          "CaseFlow",
+          "CaseFlow basis and points"
+        ],
+        "summary": "Case Trace Detail",
+        "operationId": "case_trace_detail_api_v1_caseflow_projects__pid__cases__cid__trace_get",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pid"
+            }
+          },
+          {
+            "name": "cid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5485,6 +5537,14 @@
             "type": "boolean",
             "title": "Acknowledge Grounding",
             "default": false
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CaseSelection"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Items"
           }
         },
         "additionalProperties": false,
@@ -5664,6 +5724,30 @@
             "minimum": 1.0,
             "title": "Revision"
           },
+          "case_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Revision"
+          },
+          "binding_fingerprint": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binding Fingerprint"
+          },
           "title": {
             "anyOf": [
               {
@@ -5755,6 +5839,86 @@
             "type": "boolean",
             "title": "Acknowledge Grounding",
             "default": false
+          },
+          "point_binding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PointBinding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviewed_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "preconditions",
+                    "data",
+                    "steps",
+                    "expected"
+                  ]
+                },
+                "type": "array",
+                "maxItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed Fields"
+          },
+          "semantic_resolution": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Semantic Resolution"
+          },
+          "evidence_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array",
+                "maxItems": 60
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Ids"
+          },
+          "numeric_input": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NumericInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recalculate": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recalculate"
           }
         },
         "additionalProperties": false,
@@ -5763,6 +5927,106 @@
           "revision"
         ],
         "title": "CaseEdit"
+      },
+      "CaseOperation": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "case_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Revision"
+          },
+          "binding_fingerprint": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binding Fingerprint"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "CaseOperation"
+      },
+      "CaseSelection": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "case_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Case Revision"
+          },
+          "binding_fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Binding Fingerprint"
+          },
+          "acknowledge_grounding": {
+            "type": "boolean",
+            "title": "Acknowledge Grounding",
+            "default": false
+          },
+          "reviewed_fields": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "preconditions",
+                "data",
+                "steps",
+                "expected"
+              ]
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Reviewed Fields"
+          },
+          "semantic_resolution": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Semantic Resolution",
+            "default": ""
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 60,
+            "title": "Evidence Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "case_revision",
+          "binding_fingerprint"
+        ],
+        "title": "CaseSelection"
       },
       "Cause": {
         "properties": {
@@ -7293,7 +7557,8 @@
             "type": "string",
             "enum": [
               "prepare_basis",
-              "extract_points"
+              "extract_points",
+              "expand_cases"
             ],
             "title": "Kind"
           },
@@ -7336,6 +7601,14 @@
               }
             ],
             "title": "Basis Bundle Id"
+          },
+          "point_bindings": {
+            "items": {
+              "$ref": "#/components/schemas/PointBinding"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Point Bindings"
           }
         },
         "additionalProperties": false,
@@ -8278,6 +8551,29 @@
         "type": "object",
         "title": "ModelSettings"
       },
+      "NumericInput": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Rule Id"
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rule_id",
+          "value"
+        ],
+        "title": "NumericInput"
+      },
       "NumericRule": {
         "properties": {
           "revision": {
@@ -8573,6 +8869,33 @@
           "expires_at"
         ],
         "title": "Plan"
+      },
+      "PointBinding": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Fingerprint"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "revision",
+          "fingerprint"
+        ],
+        "title": "PointBinding"
       },
       "PointEdit": {
         "properties": {

@@ -1,0 +1,211 @@
+{
+  "date": "2026-10-25T04:55:07.824476+00:00",
+  "data_kind": "synthetic_only",
+  "source_database": "caseflow_stage5",
+  "restored_database": "caseflow_stage5_restore_20261025_045503",
+  "tables": 46,
+  "all_table_fingerprints_equal": true,
+  "initialize_twice_no_business_write": true,
+  "legacy_default_strict_without_get_write": true,
+  "document_versions": 7,
+  "evidence_responses_roundtripped": 7,
+  "test_points": 1,
+  "point_review_history": 2,
+  "cases": 4,
+  "runs": 1,
+  "task_groups": 11,
+  "unknown_ledger_rows": 1,
+  "unknown_result_remains_blocked": true,
+  "model_configuration_unchanged": true,
+  "original_and_snapshot_hashes_valid": true,
+  "live_model_calls": 0,
+  "controlled_ledger_exception_calls": 1,
+  "backup_bytes": 152305,
+  "backup_sha256": "43d36051c104b13e5cf7d8d999136276178b7a2f089910fb733bf0ed17ebe126",
+  "table_fingerprints": {
+    "cf_audit": {
+      "count": 33,
+      "sha256": "b8bb6ed9867e5eca54605efc50dc9b370b594635b60026da92d5cecc5d038c4a"
+    },
+    "cf_document_versions": {
+      "count": 7,
+      "sha256": "a0e01256f11370600d553b8f6c74d81f1e0c7ac4147f99eefabce646f4ae6a2d"
+    },
+    "cf_events": {
+      "count": 153,
+      "sha256": "5effae1edc4cd11720cb63c765d89b2eb532bfbe2027d55986fca51ec155cc2d"
+    },
+    "cf_evidence": {
+      "count": 7,
+      "sha256": "3be8c8ee38f88696373a00ed76d5b06acca7d395b93fce072394430d667b8fe7"
+    },
+    "cf_projects": {
+      "count": 4,
+      "sha256": "48b36c8cb9301956300a0ce0c70ee5a2af992fd051d25da85b628c79a94ef295"
+    },
+    "cf_requests": {
+      "count": 1,
+      "sha256": "30fbc31e73902d5cad51ce294c1b571fc7d9619071693099efbf8d1ff1aa3130"
+    },
+    "cf_task_groups": {
+      "count": 11,
+      "sha256": "9a4cdbe4ff3a58698933ba4756281e4963ec520d313a715d03bfd337b5e35066"
+    },
+    "cf_tasks": {
+      "count": 36,
+      "sha256": "ba7186365174e42b51bb2081cb4bafeb95ed5585f35609a49b31bab7e269988f"
+    },
+    "collection_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collections": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_configs": {
+      "count": 1,
+      "sha256": "ed7559ac0e37718b782d7a6ad9f26bcb3681114d1e11ade8261bdbb4528e5902"
+    },
+    "diagnostic_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_feedback": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_previews": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_requests": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_sessions": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_sources": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diagnostic_turns": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "durable_operations": {
+      "count": 35,
+      "sha256": "bb04e3c7cdcd5b5c9d66ae40ca13612c118fe59f9781d3483e426c690327eff7"
+    },
+    "durable_tasks": {
+      "count": 36,
+      "sha256": "c1462e12282d85f88cff0dcaebe34d5fe2fc95524ae750f7992ff70b4ba76a0a"
+    },
+    "evaluation_calls": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evaluation_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evaluation_items": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evaluation_reviews": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evaluation_runs": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evaluation_snapshots": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evidence": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "external_consents": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "external_documents": {
+      "count": 2,
+      "sha256": "20f0c394626ee1e82bec3ec82a86ba07afd5f8211f1ddfa59beefc37db0b6749"
+    },
+    "external_snapshots": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "external_targets": {
+      "count": 1,
+      "sha256": "e5ad83f3e6435cefedc030aac1cf58ada232b4c5f828695485f906f971ba6728"
+    },
+    "fault_cases": {
+      "count": 6,
+      "sha256": "b25566a09583943d24bc149e8996f5714acb7ee06b45867a354ce3ffe15117fe"
+    },
+    "investigation_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "investigation_steps": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "investigations": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kb_chunks": {
+      "count": 6,
+      "sha256": "7ee95cfa2dbe866332d1a7034321e3477eea9940b537876a0e5ea369f1bd8bb1"
+    },
+    "kb_documents": {
+      "count": 6,
+      "sha256": "cb39016efc07e60cf3a61c6d3b7856d6e701fc0cba3c13fe1b600438471fac60"
+    },
+    "kb_embeddings": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kb_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kb_index_chunks": {
+      "count": 10,
+      "sha256": "808b90fd22f7e8b2906019a1fa629aa34497e92d286a6f7a39731e23c8a195a5"
+    },
+    "kb_indexes": {
+      "count": 4,
+      "sha256": "0cff379ec50a905f0358dc40f7c464df2af0018b5edd664a87890c868f02e758"
+    },
+    "kb_model_calls": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kb_tasks": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "recovery_actions": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "recovery_events": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "recovery_plans": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
+}

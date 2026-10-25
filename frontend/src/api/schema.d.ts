@@ -723,6 +723,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/caseflow/projects/{pid}/cases/{cid}/trace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Case Trace Detail */
+        get: operations["case_trace_detail_api_v1_caseflow_projects__pid__cases__cid__trace_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/kb/documents": {
         parameters: {
             query?: never;
@@ -1816,6 +1833,8 @@ export interface components {
              * @default false
              */
             acknowledge_grounding: boolean;
+            /** Items */
+            items?: components["schemas"]["CaseSelection"][];
         };
         /** Body_files_api_v1_diagnostic_sessions__sid__files_post */
         Body_files_api_v1_diagnostic_sessions__sid__files_post: {
@@ -1897,6 +1916,10 @@ export interface components {
         CaseEdit: {
             /** Revision */
             revision: number;
+            /** Case Revision */
+            case_revision?: number | null;
+            /** Binding Fingerprint */
+            binding_fingerprint?: string | null;
             /** Title */
             title?: string | null;
             /** Preconditions */
@@ -1919,6 +1942,51 @@ export interface components {
              * @default false
              */
             acknowledge_grounding: boolean;
+            point_binding?: components["schemas"]["PointBinding"] | null;
+            /** Reviewed Fields */
+            reviewed_fields?: ("preconditions" | "data" | "steps" | "expected")[] | null;
+            /** Semantic Resolution */
+            semantic_resolution?: string | null;
+            /** Evidence Ids */
+            evidence_ids?: string[] | null;
+            numeric_input?: components["schemas"]["NumericInput"] | null;
+            /** Recalculate */
+            recalculate?: boolean | null;
+        };
+        /** CaseOperation */
+        CaseOperation: {
+            /** Revision */
+            revision: number;
+            /** Case Revision */
+            case_revision?: number | null;
+            /** Binding Fingerprint */
+            binding_fingerprint?: string | null;
+        };
+        /** CaseSelection */
+        CaseSelection: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Case Revision */
+            case_revision: number;
+            /** Binding Fingerprint */
+            binding_fingerprint: string;
+            /**
+             * Acknowledge Grounding
+             * @default false
+             */
+            acknowledge_grounding: boolean;
+            /** Reviewed Fields */
+            reviewed_fields?: ("preconditions" | "data" | "steps" | "expected")[];
+            /**
+             * Semantic Resolution
+             * @default
+             */
+            semantic_resolution: string;
+            /** Evidence Ids */
+            evidence_ids?: string[];
         };
         /** Cause */
         Cause: {
@@ -2528,7 +2596,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "prepare_basis" | "extract_points";
+            kind: "prepare_basis" | "extract_points" | "expand_cases";
             /** Consent */
             consent: boolean;
             /**
@@ -2542,6 +2610,8 @@ export interface components {
             rule_ids?: string[];
             /** Basis Bundle Id */
             basis_bundle_id?: string | null;
+            /** Point Bindings */
+            point_bindings?: components["schemas"]["PointBinding"][];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -2920,6 +2990,13 @@ export interface components {
             /** Official Hosts */
             official_hosts?: string[];
         };
+        /** NumericInput */
+        NumericInput: {
+            /** Rule Id */
+            rule_id: string;
+            /** Value */
+            value: string;
+        };
         /** NumericRule */
         NumericRule: {
             /** Revision */
@@ -3073,6 +3150,18 @@ export interface components {
             expires_at: string;
             /** Finished At */
             finished_at?: string | null;
+        };
+        /** PointBinding */
+        PointBinding: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Revision */
+            revision: number;
+            /** Fingerprint */
+            fingerprint: string;
         };
         /** PointEdit */
         PointEdit: {
@@ -4643,7 +4732,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Revision"];
+                "application/json": components["schemas"]["CaseOperation"];
             };
         };
         responses: {
@@ -5556,6 +5645,38 @@ export interface operations {
                 "application/json": components["schemas"]["RuleEvidenceInput"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    case_trace_detail_api_v1_caseflow_projects__pid__cases__cid__trace_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pid: string;
+                cid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

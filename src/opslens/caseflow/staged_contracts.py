@@ -46,15 +46,22 @@ class PointReviews(StagedStrict):
     note: str = Field(min_length=1, max_length=2000)
 
 
+class PointBinding(StagedStrict):
+    id: UUID
+    revision: StrictInt = Field(ge=1)
+    fingerprint: str = Field(pattern=r'^[a-f0-9]{64}$')
+
+
 class GroupInput(StagedStrict):
     revision: StrictInt = Field(ge=1)
     request_id: UUID
-    kind: Literal['prepare_basis','extract_points']
+    kind: Literal['prepare_basis','extract_points','expand_cases']
     consent: bool
     target: str = Field(default='', max_length=1000)
     document_ids: list[UUID] = Field(default_factory=list, max_length=100)
     rule_ids: list[UUID] = Field(default_factory=list, max_length=100)
     basis_bundle_id: UUID | None = None
+    point_bindings: list[PointBinding] = Field(default_factory=list,max_length=100)
 
 
 class WorkflowInput(StagedStrict):

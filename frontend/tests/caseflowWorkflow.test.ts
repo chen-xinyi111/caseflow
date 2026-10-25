@@ -28,3 +28,13 @@ test('a stale checklist takes priority over delivery while applied proposals are
  assert.equal(nextStep(s,[]).target,'review')
  s.cases[1]!.status='approved';assert.equal(nextStep(s,[]).target,'export')
 })
+
+
+test('standard approved points and cases proceed without confirming every draft rule',()=>{
+ const s=empty();s.workflow_mode='standard';s.documents=[{id:'d',role:'requirement'}];s.requirements=[{id:'r',document_id:'d',status:'draft'}]
+ s.test_points=[{id:'tp',status:'approved',blocking_reasons:[]}]
+ assert.equal(nextStep(s,[]).target,'points')
+ s.cases=[{id:'t',status:'draft'}];assert.equal(nextStep(s,[]).target,'drafts')
+ s.cases[0]!.status='approved';assert.equal(nextStep(s,[]).target,'export')
+ s.test_points[0]!.status='needs_review';assert.equal(nextStep(s,[]).target,'points')
+})

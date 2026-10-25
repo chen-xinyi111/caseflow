@@ -116,7 +116,7 @@ def dependency_fingerprint(s, point):
     items = [store.find(bundle['items'], i) for i in point['basis_item_ids']]
     return store.digest([mode(s), point['basis_bundle_id'], [binding(r) for r in rules], items,
         point['evidence_ids'], relevant_questions(s, point, bundle),
-        [answer_fingerprint(q) for q in s.get('clarifications', []) if set(q.get('basis_item_ids', [])) & set(point['basis_item_ids'])],
+        [answer_fingerprint(q) for q in s.get('clarifications', []) if set(q.get('basis_item_ids', [])) & set(point['basis_item_ids']) or point['id'] in q.get('point_ids',[])],
         [(v['id'], descendants(s, v['id'])) for v in bundle['source_versions']
          if any(bundle['evidence_catalog'].get(e, {}).get('document_id') == v['id'] for e in point['evidence_ids'])], numeric])
 
@@ -238,6 +238,8 @@ def invalidate(s):
     for point in s.get('test_points', []):
         if point['status'] == 'approved' and (qualification(s, point) or point.get('approval_fingerprint') != dependency_fingerprint(s, point)):
             store.snapshot(s, 'test_point', point); point['status'] = 'needs_review'
+    from . import case_trace
+    case_trace.invalidate(s)
 
 
 def switch(s, value):

@@ -62,4 +62,13 @@ Runtime通过租约续约、执行批次和保存点控制任务。外部请求�
 
 规则草稿、业务问题、来源继承与人工编辑均不被模型覆盖。包内容是项目JSONB追加值，接口不原地编辑；当前资格从规则绑定、采用的包项/证据、当前问题、来源后继及数值规则派生。旧缺字段项目读取strict，不在GET补写。原文和SQL证据继续使用第三阶段的不可变侧表。备份窗口额外检查queued/running组，包含叶任务之间的空隙。
 
-前端BasisPreparation、TestPointReview、GroupTasks复用原文阅读器。任务进度跟随当前叶SSE，轮询组作为最终状态；pending request_id精确查找不受最近50条限制，未知提交不会自动换ID。用例到测试点的完整链路仍属第五阶段。
+前端BasisPreparation、TestPointReview、GroupTasks复用原文阅读器。任务进度跟随当前叶SSE，轮询组作为最终状态；pending request_id精确查找不受最近50条限制，未知提交不会自动换ID。用例到测试点的完整链路见下述第五阶段。
+
+
+## 第五阶段：点约束用例与冻结追溯
+
+case_expansion.py按一个TP一个expand_points叶编排有界LangGraph，父组为expand_cases，输入冻结id/revision/fingerprint。case_trace.py集中执行准入、完整采用快照、实体并发检查、人工批准、失效和建议应用。每批最多3条，最多5次设计、8次工具、一次格式修正和一次语义复核；超32KiB不能静默删依据。已通过TP不把draft R伪装成confirmed R；strict原路径保持。
+
+生成与复核使用同一TP的精确证据、所选包项、R、明确回答和适用数值规则。额外检索只返回未采用线索。业务结果、组叶状态、任务、事件和项目预期修订沿用同一atomic_commit事务；复核未知/预算阻塞可保存有效草稿后停组，未知账本不允许继续或替代请求。已完成响应和叶不重复。
+
+新T冻结TP修订/指纹、包项/证据、R修订、来源版本和trace_snapshot；不同TP同标题不去重。修改建议冻结目标T修订及内容指纹，后续人工编辑不能被覆盖。内容或仅绑定改变也增加T修订；旧执行snapshot不会成为新版通过。缺协议的旧T只读派生legacy_direct，无业务迁移。case_export.py以冻结证据产生追溯列及本地链接；GET cases/{cid}/trace受项目隔离。

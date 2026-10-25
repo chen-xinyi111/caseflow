@@ -129,3 +129,15 @@ def bind_rule_evidence(pid: UUID, bid: UUID, data: RuleEvidenceInput):
             s['basis_bundles'].append(new);return {'basis_bundle_id':new['id']}
         return store.public(store.update(pid,data.revision,'bind_rule_evidence',fork))
     return checked(write)
+
+
+@router.get('/projects/{pid}/cases/{cid}/trace')
+def case_trace_detail(pid:UUID,cid:UUID):
+    from . import case_trace
+    with db.connect() as c:
+        p=checked(store.get,c,pid);row=checked(store.find,p['state']['cases'],cid)
+        return {'case_id':row['id'],'case_code':row['code'],'case_revision':row['revision'],
+                **case_trace.present(p['state'],row),'adopted':row.get('trace_snapshot'),
+                'test_point_revision':row.get('test_point_revision'),'point_fingerprint':row.get('point_fingerprint'),
+                'basis_bundle_id':row.get('basis_bundle_id'),'requirement_bindings':row.get('requirement_bindings',[]),
+                'citations':row.get('citations',[])}

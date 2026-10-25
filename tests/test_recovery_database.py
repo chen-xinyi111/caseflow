@@ -48,7 +48,7 @@ def test_approval_execution_probe_and_duplicate_delivery_are_durable(client,reco
     assert all(r['status']=='approved' for r in results)
     claimed=store.claim();worker.process(claimed,a);worker.process(claimed,a)
     saved=client.get('/api/v1/recovery/plans/'+p['id']).json()
-    assert saved['status']=='completed' and saved['result']['passed'] and len(a.actions)==1 and len(a.probes)==1
+    assert saved['status']=='completed' and saved['result']['passed'] and len(a.actions)==1 and len(a.probes)==1, {'plan':saved,'actions':a.actions,'probes':a.probes}
     assert client.post('/api/v1/recovery/plans/'+p['id']+'/approve',json=body).json()['status']=='completed'
     text=client.get('/api/v1/recovery/plans/'+p['id']+'/events').text
     assert all(v in text for v in ('approved','action_issued','verifying','probe_submitted','finished'))

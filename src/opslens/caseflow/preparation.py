@@ -227,6 +227,8 @@ def finalize(s, g, precomputed):
         ids = candidate['evidence_ids']; citations = compatible_citations(s, catalog, ids)
         key = store.digest([did,candidate['text'],sorted(ids)])
         r = next((r for r in s['requirements'] if r.get('preparation_key') == key), None)
+        if not r:
+            r=next((row for row in s['requirements'] if row['document_id']==did and row['text']==candidate['text'] and row['status']!='excluded' and set(precomputed['rule_evidence'].get(row['id'],[]))==set(ids)),None)
         excluded = next((r for r in s['requirements'] if r['document_id']==did and r['text']==candidate['text'] and r['status']=='excluded'), None)
         if excluded: not_adopted.append({'text':candidate['text'],'reason':'保留已有人工排除','evidence_ids':ids}); continue
         old = [r for r in s['requirements'] if r['document_id']==d.get('previous_id') and r['status']!='excluded']
@@ -328,6 +330,9 @@ def process(task):
             elif task['kind']=='prepare_retrieve':result=retrieve(rt,task,g,i,state,provider)
             elif task['kind']=='prepare_finalize':result=finalize_inputs(state,g);mutate=finalize
             elif task['kind']=='extract_points':result=extract_points(rt,task,g,i,state,provider);mutate=save_points
+            elif task['kind']=='expand_points':
+                from . import case_expansion,case_trace
+                result=case_expansion.expand(rt,task,g,i,state,provider);mutate=case_trace.add
             else:raise ValueError('未知组叶任务类型')
             groups.atomic_commit(rt,task,result,mutate)
     except durability.LeaseLost:return

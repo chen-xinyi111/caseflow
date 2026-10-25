@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed,ref} from 'vue'
-const props=defineProps<{pending:any[],requirements:any[],selections:Record<string,string[]>,busy:boolean}>()
+const props=defineProps<{pending:any[],requirements:any[],selections:Record<string,string[]>,busy:boolean,sourceLabel?:(citation:any)=>string}>()
 defineEmits<{select:[id:string,target:string],decide:[change:any,action:string],source:[citation:any]}>()
 const selected=ref('')
 const current=computed(()=>props.pending.find(c=>c.id===selected.value)??props.pending[0])
@@ -14,7 +14,7 @@ const label:Record<string,string>={unchanged:'内容一致，核对资料来源'
  <template v-if="current">
   <p class="muted">一次处理一项。先看新内容，再选择对应的原规则；不要仅凭候选关联直接确认。</p>
   <label>当前查看<select :value="current.id" @change="selected=($event.target as HTMLSelectElement).value"><option v-for="(c,i) in pending" :key="c.id" :value="c.id">{{i+1}} / {{pending.length}} · {{c.proposed?.text??'可能移除的规则'}}</option></select></label>
-  <div class="change-new"><small>{{label[current.kind]??'规则变化'}}</small><h3>{{current.proposed?.text??'新资料中未找到对应内容，请核对原文后决定是否移除。'}}</h3><button v-for="(q,i) in current.proposed?.citations??[]" :key="String(i)" class="text-button" @click="$emit('source',q)">查看新资料 · 第{{q.page}}页</button></div>
+  <div class="change-new"><small>{{label[current.kind]??'规则变化'}}</small><h3>{{current.proposed?.text??'新资料中未找到对应内容，请核对原文后决定是否移除。'}}</h3><button v-for="(q,i) in current.proposed?.citations??[]" :key="String(i)" class="text-button" @click="$emit('source',q)">查看新资料 · {{sourceLabel?.(q)??'原文位置'}}</button></div>
   <label>这项变化对应哪条原规则？<select :value="selections[current.id]?.[0]??''" @change="$emit('select',current.id,($event.target as HTMLSelectElement).value)"><option value="">请核对后选择</option><option v-for="id in current.old_ids" :key="id" :value="id">{{requirements.find(r=>r.id===id)?.code}} · {{requirements.find(r=>r.id===id)?.text}}</option></select></label>
   <div class="change-old" v-if="target"><small>修改前 · {{target.code}}</small><p>{{target.text}}</p></div>
   <div class="actions"><button v-if="current.proposed" class="primary" :disabled="busy||!target" @click="$emit('decide',current,'replace')">保存这项修改</button><button v-else class="primary" :disabled="busy||!target" @click="$emit('decide',current,'remove')">确认移除这条规则</button><button v-if="current.proposed" class="secondary" :disabled="busy" @click="$emit('decide',current,'add')">作为新规则添加</button><button class="text-button" :disabled="busy" @click="$emit('decide',current,'reject')">本项不更新</button></div>

@@ -216,6 +216,9 @@ def add_cases(s,items,allowed_requirements,allowed_documents):
 
 def edit_case(s,cid,values):
     row=find(s['cases'],cid)
+    from . import case_trace
+    if case_trace.is_point(row):return case_trace.edit(s,cid,values)
+    if set(values)&{'case_revision','binding_fingerprint','point_binding','recalculate','reviewed_fields','semantic_resolution','evidence_ids','numeric_input'}:raise ValueError('历史直接关联用例不接受测试点协议字段')
     acknowledge=values.pop('acknowledge_grounding',False)
     if row.get('applied_to'):raise ValueError('此建议已应用，请查看并编辑原用例')
     snapshot(s,'case',row)
@@ -242,8 +245,10 @@ def edit_case(s,cid,values):
         row['requirement_revisions']=current_revisions;row['reviewed_at']=now()
     row.update(status=status,review_note=clean(note));return {'case_id':cid}
 
-def accept_proposal(s,cid):
+def accept_proposal(s,cid,values=None):
     proposal=find(s['cases'],cid)
+    from . import case_trace
+    if case_trace.is_point(proposal):return case_trace.apply_proposal(s,cid,values or {})
     if not proposal.get('replaces_case_id') or proposal['status']=='rejected':raise ValueError('此用例不是待处理修改建议')
     target=find(s['cases'],proposal['replaces_case_id'])
     if target['status']!='needs_review':raise FileExistsError('原用例已处理，请重新核对建议')
@@ -276,6 +281,8 @@ def record_run(s,name,rows,request_id):
         value=case if rev==case['revision'] and case['status']=='approved' else historical
         if value is None:raise ValueError('只能记录已审核用例修订的执行结果')
         if value['status']!='approved':raise ValueError('只能记录已审核用例修订的执行结果')
+        from . import case_trace
+        if value is case and case_trace.is_point(case):case_trace.require_current(s,case)
         if item['status'] not in ('通过','失败','阻塞','未执行'):raise ValueError('执行状态无效')
         result.append(item|{'case_id':case['id'],'code':case['code'],'requirement_revisions':value['requirement_revisions'],'snapshot':copy.deepcopy(value)})
     if not result:raise ValueError('请填写至少一项执行结果')
@@ -294,15 +301,16 @@ def public(p):
     s.setdefault('workflow_mode','strict');s.setdefault('schema_version',1)
     s.setdefault('basis_bundles',[]);s.setdefault('point_reviews',[])
     s['test_points']=[points.present(p['state'],r) for r in p['state'].get('test_points',[])]
-    from . import grounding
+    from . import grounding,case_trace
     for rule in s.get('numeric_rules',[]):rule['current']=grounding.current_rule(s,rule)
     # Compute against stored state: presentation-only 'current' flags are not fingerprint inputs.
     for case in s['cases']:
+        case.update(case_trace.present(p['state'],case))
         if case.get('grounding'):case['grounding']['current']=grounding.report_current(p['state'],case)
     for run in s['runs']:
         for result in run['results']:
             case=find(s['cases'],result['case_id'])
-            result['current']=result['revision']==case['revision'] and case['status']=='approved' and result['requirement_revisions']==case['requirement_revisions']
+            result['current']=result['revision']==case['revision'] and case['status']=='approved' and result['requirement_revisions']==case['requirement_revisions'] and case_trace.execution_current(p['state'],case,result)
     return dict(p)|{'state':s}
 
 def task(c,i):
@@ -325,9 +333,9 @@ def create_task(pid,revision,request_id,kind,document_ids,requirement_ids,consen
             return previous
         if p['revision']!=revision:raise FileExistsError('资料已变化，请重新确认')
         if p['state'].get('archived'):raise FileExistsError('归档项目只读')
-        from . import groups,points
+        from . import groups,points,case_trace
         groups.ensure_idle(c,pid)
-        if kind=='generate' and points.mode(p['state'])!='strict':raise ValueError('标准流程须通过测试点评审；详细用例展开将在第五阶段提供')
+        if kind=='generate' and points.mode(p['state'])!='strict':raise ValueError('标准流程须选择当前已批准测试点，通过任务组展开详细用例')
         for i in document_ids:find(p['state']['documents'],i)
         if kind=='review':
             if not 1<=len(case_ids)<=3:raise ValueError('一次检查1至3条已保存用例')
@@ -336,10 +344,14 @@ def create_task(pid,revision,request_id,kind,document_ids,requirement_ids,consen
             if any(row.get('applied_to') for row in selected):raise ValueError('请检查原用例，已应用建议只保留历史')
             if set(requirement_ids)!={rid for row in selected for rid in row['requirement_ids']}:raise ValueError('请完整选择被检查用例的关联需求')
         elif case_ids:raise ValueError('只有依据检查任务可指定已有用例')
+        point_review=kind=='review' and all(case_trace.is_point(row) for row in selected) if kind=='review' else False
+        if point_review:
+            for row in selected:case_trace.require_current(p['state'],row)
+            if set(document_ids)!={v['id'] for row in selected for v in row['source_versions']}:raise ValueError('点链路复核仅接受采用的确切资料版本')
         for i in requirement_ids:
-            if find(p['state']['requirements'],i)['status']!='confirmed':raise ValueError('请先确认所选需求')
+            if not point_review and find(p['state']['requirements'],i)['status']!='confirmed':raise ValueError('请先确认所选需求')
         if not document_ids:raise ValueError('请选择本轮允许处理的资料')
-        if kind in ('generate','review'):
+        if kind in ('generate','review') and not point_review:
             for rid in requirement_ids:
                 r=find(p['state']['requirements'],rid)
                 if not {q['document_id'] for q in r['citations']}<=set(document_ids):raise ValueError('请选择关联需求的全部依据资料，或调整本轮需求范围')

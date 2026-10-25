@@ -11,7 +11,8 @@ ACTIVE = ('queued', 'running')
 
 def signature():
     from .agent import processing_signature
-    return store.digest([points.VERSION, processing_signature()])
+    from .case_trace import VERSION
+    return store.digest([points.VERSION, VERSION, processing_signature()])
 
 
 def get(c, pid, gid, lock=False):
@@ -43,7 +44,7 @@ def create(pid, data):
     with db.connect() as c:
         p = store.get(c, pid, True)
         previous = c.execute('SELECT * FROM cf_task_groups WHERE request_id=%s', (data['request_id'],)).fetchone()
-        digest = store.digest(data)
+        digest = store.digest({k:v for k,v in data.items() if k!='point_bindings' or v})
         if previous:
             if str(previous['project_id']) != str(pid) or previous['input_digest'] != digest: raise FileExistsError('请求编号已用于不同任务组输入')
             return present(previous)
@@ -52,6 +53,7 @@ def create(pid, data):
         if data['consent'] is not True: raise ValueError('请明确允许处理本次资料')
         ensure_idle(c, pid)
         cfg = model.config(c); frozen = copy.deepcopy(data)
+        if data['kind'] != 'expand_cases' and data.get('point_bindings'):raise ValueError('此任务不接受测试点展开绑定')
         if data['kind'] == 'prepare_basis':
             if not data['target'].strip() or not data['document_ids'] or data.get('basis_bundle_id'): raise ValueError('请填写目标并选择资料，不附已有准备包')
             if len(set(data['document_ids'])) != len(data['document_ids']): raise ValueError('资料选择不能重复')
@@ -63,7 +65,7 @@ def create(pid, data):
             frozen['retrieval_mode'] = p['state'].get('retrieval_mode', 'keyword')
             frozen['answers'] = [{k:r.get(k) for k in ('id','answers','questions')} for r in p['state']['requirements'] if r['document_id'] in data['document_ids']]
             items = preparation.segment_items(p['state'], frozen)
-        else:
+        elif data['kind'] == 'extract_points':
             if not data.get('basis_bundle_id') or data['target'] or data['document_ids']: raise ValueError('提取测试点仅接受准备包及目标规则')
             bundle = store.find(p['state'].get('basis_bundles', []), data['basis_bundle_id'])
             rids = data['rule_ids'] or [b['id'] for b in bundle['requirement_bindings']]
@@ -73,6 +75,12 @@ def create(pid, data):
             frozen.update(target=bundle['target'], document_ids=[v['id'] for v in bundle['source_versions']], rule_ids=rids,
                           source_versions=bundle['source_versions'], retrieval_mode=bundle['retrieval_mode'])
             items = preparation.point_items(p['state'], bundle, rids)
+        else:
+            from . import case_expansion
+            if not data.get('point_bindings') or data['target'] or data['document_ids'] or data['rule_ids'] or data.get('basis_bundle_id'):raise ValueError('展开仅接受明确的测试点修订及指纹')
+            if len({b['id'] for b in data['point_bindings']})!=len(data['point_bindings']):raise ValueError('测试点选择不能重复')
+            items=case_expansion.items(p['state'],data['point_bindings'])
+            frozen['target']='由人工批准的测试点展开用例'
         row = c.execute('''INSERT INTO cf_task_groups(id,project_id,request_id,kind,input,input_digest,
             expected_project_revision,config_id,processing_signature,items) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING *''',
             (uuid4(), pid, data['request_id'], data['kind'], store.jsonb(frozen), digest, p['revision'], cfg['id'], signature(), store.jsonb(items))).fetchone()
@@ -177,6 +185,8 @@ def atomic_commit(rt, task, result, mutate=None):
             c.execute('INSERT INTO cf_audit(project_id,action,payload) VALUES (%s,%s,%s)', (p['id'], task['kind'], store.jsonb({'task_id': str(task['id']), 'group_id': str(g['id'])})))
             g['expected_project_revision'] += 1
         i.update(status='completed', result=result, committed_revision=g['expected_project_revision'])
+        if result.get('stop_reason'):
+            c.execute("UPDATE cf_task_groups SET status='blocked',error=%s WHERE id=%s",(result['stop_reason'],g['id']))
         i['attempts'][-1]['status'] = 'completed'
         c.execute('UPDATE cf_task_groups SET items=%s,expected_project_revision=%s WHERE id=%s', (store.jsonb(g['items']), g['expected_project_revision'], g['id']))
         c.execute("UPDATE cf_tasks SET status='completed',result=%s,finished_at=now() WHERE id=%s", (store.jsonb(result), task['id']))
