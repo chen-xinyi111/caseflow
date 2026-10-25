@@ -52,6 +52,8 @@ cd caseflow
 
 2026-10-25第五阶段实现详细用例、完整追溯与变更闭环。完整流程、实际验证及未验证范围见[第五阶段交接](docs/upgrade/20261025-stage5-cases/00_交接索引.md)。用户业务库未执行升级，启动新版前请先备份并阅读兼容说明。
 
+五阶段实施范围已核查，见[计划完成核查与未验证项](docs/upgrade/20261025-completion-audit/00_完成核查.md)。
+
 ## 实现与边界
 
 Vue / TypeScript / FastAPI / LangGraph / PostgreSQL / pgvector / BM25 / Docker。
